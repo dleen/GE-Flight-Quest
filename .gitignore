@@ -1,0 +1,13 @@
+*.csv
+Data/
+R/*.csv
+*.pyc
+Python/*.pyc
+
+*.jpg
+
+*.png
+R/*.png
+R/*.pdf
+*.mm
+Datamap.mindnode
