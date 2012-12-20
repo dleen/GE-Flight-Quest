@@ -1,4 +1,7 @@
 def leader_board_data():
+	"""
+	The locations of the leader board data files.
+	"""
 	# Define data locations and available directories:
 	data_set_main = "PublicLeaderboardSet"
 	year = "2012"

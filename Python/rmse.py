@@ -1,6 +1,9 @@
 import numpy as np
 
 def rmse_fun(actual, predicted):
+	"""
+	Calculate the root mean square difference between the actual and predicted times.
+	"""
 	N = len(actual)
 	N1 = len(predicted)
 
@@ -17,6 +20,10 @@ def rmse_fun(actual, predicted):
 	return np.sqrt(float(square_sum) / N)
 
 def rmse_final(runway_act, runway_pred, gate_act, gate_pred):
+	"""
+	The final rmse score is a weighted sum of the runway arrival times
+	and the gate arrival times.
+	"""
 	rmse_gate = rmse_fun(gate_act, gate_pred)
 	rmse_run = rmse_fun(runway_act, runway_pred)
 
