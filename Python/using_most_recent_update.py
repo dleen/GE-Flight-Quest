@@ -2,42 +2,75 @@ import pandas as pd
 import leader_board as lb
 import re
 
+import flightday as fd
+
 from dateutil.parser import parse
 from dateutil.tz import tzutc, tzoffset
 
 from datetime import *
 
+import utilities as ut
+
 
 def main():
-	fh_location  = lb.flight_history_data()
+	fn = lb.folder_names()
+	data_set_main = "PublicLeaderboardSet"
 
-	fin = pd.DataFrame(columns=('flight_history_id', 'actual_runway_arrival', 'actual_gate_arrival'))
+	data_test_set = pd.read_csv("../Data/" + data_set_main + "/" + fn[0] + "/" + "test_flights.csv", usecols=[0])
 
-	for i in range(len(fh_location)):
-		df = flight_days(i)
-		fin = pd.concat([fin, df])
 
-	fin.to_csv('test.csv', index=False)
+
+	x = fd.FlightDay(fn[0], data_set_main)
+
+	y = x.flight_history_id_grouping(data_test_set)
+
+
+	# y = x.flight_history_events.sort_index(by='date_time_recorded', ascending=False)
+
+	# w = y.groupby('flight_history_id')
+
+	for n, g in y:
+		#print n
+		#print g.sort_index(by='date_time_recorded', ascending=False).values
+		print fd.using_most_recent_update(g)
+		#w1 = g['data_updated'].apply(lambda x: fd.parse_fhe_events(x, "ERA"))
+
+
+
+
+
+	# z1 = y.apply(lambda x: fd.parse_fhe_events(x, "ERA"))
+	# z2 = y.apply(lambda x: fd.parse_fhe_events(x, "EGA"))
+
+	# print x
+
+
+
+
+	#print x.flight_history_events[0][0:2]
+
+
+
+	# fin = pd.DataFrame(columns=('flight_history_id', 'actual_runway_arrival', 'actual_gate_arrival'))
+
+	# for i in range(len(fh_location)):
+	# 	df = flight_days(i)
+	# 	fin = pd.concat([fin, df])
+
+	# fin.to_csv('test.csv', index=False)
 
 
 def flight_days(i):
 	# Which dataset to use:
 	data_set_main = "PublicLeaderboardSet"
 	# Find the location of flighthistoryevents.csv for the leaderboard dataset:
-	fhe_location = lb.leader_board_data()
-	fh_location  = lb.flight_history_data()
-	test_location= lb.test_data()
+
+
 
 	# Read in the flight_history_ids of the flight times to be predicted:
 	data_test_set = \
 		pd.read_csv("../Data/" + test_location[i])
 
-	# Read in one of the training days, specifically the file flighthistoryevents.csv:
-	data_train_set = \
-		pd.read_csv("../Data/" + fhe_location[i])
-
-	data_train_set_2 = \
-		pd.read_csv("../Data/" + fh_location[i], converters = get_flight_history_date_converter())
 
 	# Inner join the two data sets on flight_history_id:
 	data_joined = pd.merge(left=data_test_set, right=data_train_set_2, on='flight_history_id', how='left')
@@ -192,50 +225,9 @@ def prune_columns(df):
 
 	return df
 
-def get_flight_history_date_converter():
-	return {x : to_utc_date for x in get_flight_history_date_columns()}
 
-def get_flight_history_date_columns():
-	flight_history_date_columns = [
-		"published_departure",
-		"published_arrival",
-		"scheduled_gate_departure",
-		"scheduled_gate_arrival",
-		"actual_gate_departure",
-		"actual_gate_arrival",
-		"scheduled_runway_departure",
-		"scheduled_runway_arrival",
-		"actual_runway_departure",
-		"actual_runway_arrival",
-	]
-	return flight_history_date_columns
 
-def to_utc_date(myString):
-	if not myString or myString=="MISSING":
-		return "MISSING"
-	if myString=="HIDDEN":
-		return "HIDDEN"
-	return parse_datetime_format1(myString).astimezone(tzutc())
 
-def parse_datetime_format1(datestr):
-    """
-    Doing this manually for efficiency
-
-    Format: 2012-11-12 01:00:03-08
-    Year-Month-Day Hour:Minute:Second-TimeZoneUTCOffsetInHours
-
-    Converts into UTC
-    """
-    dt = datetime(int(datestr[:4]),
-                  int(datestr[5:7]),
-                  int(datestr[8:10]),
-                  int(datestr[11:13]),
-                  int(datestr[14:16]),
-                  int(datestr[17:19]),
-                  0,
-                  tzoffset(None, int(datestr[19:22]) * 3600))
-    dt = dt.astimezone(tzutc())
-    return dt
 
 if __name__=='__main__':
  	main()
