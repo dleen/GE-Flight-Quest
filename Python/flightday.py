@@ -34,11 +34,11 @@ class FlightDay:
 			converters={"date_time_recorded": dut.parse_datetime_format6})
 
 		self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id',
-															  'actual_runway_arrival', 
-															  'actual_gate_arrival'))
+			'actual_runway_arrival', 
+			'actual_gate_arrival'))
 
 		cutoff_time_list = pd.read_csv("../Data/" + data_set_name + "/" "days.csv",
-										 index_col='folder_name', parse_dates=[1])
+			index_col='folder_name', parse_dates=[1])
 		self.cutoff_time = cutoff_time_list['selected_cutoff_time'].ix[folder_name]
 
 		self.midnight_time = datetime(self.cutoff_time.year, 
