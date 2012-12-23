@@ -1,12 +1,13 @@
 import datetime
 import dateutil
 from dateutil.tz import tzoffset, tzutc
+from dateutil.parser import parse
 
 #
 # Convert from date times to minutes after midnight of the
 # day that the flight departed
 #
-def convert_df_predictions_from_datetimes_to_minutes(df_predictions,
+def convert_predictions_from_datetimes_to_minutes(df_predictions,
     midnight_time):
     """
     For each day we 
@@ -114,3 +115,9 @@ def parse_datetime_format1(datestr):
                            tzoffset(None, int(datestr[19:22]) * 3600))
     dt = dt.astimezone(tzutc())
     return dt
+
+def parse_to_utc(datestr):
+    if datestr:
+        return parse(datestr).astimezone(tzutc())
+    else:
+        return datestr

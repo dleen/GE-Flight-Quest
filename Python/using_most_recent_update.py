@@ -16,38 +16,27 @@ def main():
 	fn = lb.folder_names()
 	data_set_main = "PublicLeaderboardSet"
 
-	data_test_set = pd.read_csv("../Data/" + data_set_main + "/" + fn[0] + "/" + "test_flights.csv", usecols=[0])
+	fd.using_most_recent_updates_all(fn, data_set_main)
 
-
-
-	x = fd.FlightDay(fn[0], data_set_main)
-
-	y = x.flight_history_id_grouping(data_test_set)
-
-
-	# y = x.flight_history_events.sort_index(by='date_time_recorded', ascending=False)
-
-	# w = y.groupby('flight_history_id')
-
-	for n, g in y:
-		#print n
-		#print g.sort_index(by='date_time_recorded', ascending=False).values
-		print fd.using_most_recent_update(g)
-		#w1 = g['data_updated'].apply(lambda x: fd.parse_fhe_events(x, "ERA"))
-
-
-
-
-
-	# z1 = y.apply(lambda x: fd.parse_fhe_events(x, "ERA"))
-	# z2 = y.apply(lambda x: fd.parse_fhe_events(x, "EGA"))
+	# x = pd.DataFrame(None, columns = ('col1', 'col2'))
 
 	# print x
 
+	# x = x.reindex(range(10))
+
+	# print x
+
+	# x['col1'] = range(10)
+
+	# print x
+
+	# print len(data_test_set)
 
 
+	# d = fd.using_most_recent_updates_daily(x, data_test_set)
 
-	#print x.flight_history_events[0][0:2]
+	# print d.flight_predictions[0:10]
+
 
 
 
