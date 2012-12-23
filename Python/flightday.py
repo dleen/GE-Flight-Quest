@@ -7,7 +7,19 @@ import date_utilities as dut
 
 class FlightDay:
 	"""
-	A Day class for storing all the information we know about one day of flight data
+	A Day class for storing the most basic information we know about one day of flight data i.e.:
+	flight_history
+	flight_history_events
+
+	flight_predictions: our predictions for the actual arrival times
+
+	cutoff_time_list: this is a list of the times each day where the following is true:
+	    flight_history["actual_runway_departure"] < cutoff_time:
+    	flight_history["actual_runway_arrival"] >= cutoff_time:
+
+    cutoff_time: is the value in cutoff_time_list corresponding to the folder containing flight_history
+
+    midnight_time: this is the midnight against which we start counting the minutes until arrival
 	"""
 
 	def __init__(self, folder_name, data_set_name):
@@ -36,7 +48,10 @@ class FlightDay:
 		
 	def flight_history_id_grouping(self, that_df):
 		"""
-		Description here
+		This function does a "left join" (exactly like SQL join) using the test data flight ids
+		as the left data and the flight history events as the right data. We then join the rest
+		of the flight history data in a similar manner.
+		Maybe this second join will be changed to something smarter?
 		"""
 		joined_data = pd.merge(left=that_df,     right=self.flight_history_events, on='flight_history_id', how='left', sort=False)
 		joined_data = pd.merge(left=joined_data, right=self.flight_history,        on='flight_history_id', how='left', sort=False)
@@ -45,10 +60,11 @@ class FlightDay:
 
 		return grouped_on_fhid
 
-	def confirm_read(self):
-		print self.flight_predictions
-
 def using_most_recent_updates_all(days_list, data_set_name):
+	"""
+	Runs the most recent update model for each day in the dataset and returns the result to a 
+	csv file in the python directory.
+	"""
 	fin = pd.DataFrame(columns=('flight_history_id', 'actual_runway_arrival', 'actual_gate_arrival'))
 
 	print data_set_name
@@ -65,6 +81,12 @@ def using_most_recent_updates_all(days_list, data_set_name):
 	print "All files done!"
 
 def using_most_recent_updates_daily(day, data_test_set):
+	"""
+	Given a day of flights calculates the most recent update for runway and
+	gate arrival for each of the flights. Enters this into the flight prediction
+	dataframe. Replaces any missing values with just the value of the cutoff time.
+	Finally converts the predictions to minutes past midnight.
+	"""
 	flight_events = day.flight_history_id_grouping(data_test_set)
 
 	fid = []
@@ -93,7 +115,9 @@ def using_most_recent_updates_daily(day, data_test_set):
 
 def most_recent_update(event_group):
 	"""
-	Description here
+	Takes in a group of events corresponding to one flight history id.
+	Parses the events looking for estimated runway arrival or gate updates
+	and returns the most recent update for each.
 	"""
 	event_group = event_group.sort_index(by='date_time_recorded', ascending=False)
 
@@ -114,6 +138,10 @@ def most_recent_update(event_group):
 	return [era_est, ega_est]
 
 def get_updated_arrival(event_list, row, arrival_type, offset_str):
+	"""
+	Returns the most recent estimate of the arrival time. If that
+	cannot be found resorts to using the scheduled arrival times.
+	"""
 	if arrival_type == "runway":
 		sig = "ERA"
 	elif arrival_type == "gate":
@@ -132,6 +160,12 @@ def get_updated_arrival(event_list, row, arrival_type, offset_str):
 	return est
 
 def get_scheduled_arrival(row, arrival_type):
+	"""
+	Try each of the columns containing arrival information in order
+	of perceived importance. If one type runway or gate cannot be found
+	use the opposite type information before moving onto the next column of 
+	data. Return None is all data is missing
+	"""
 	if row["scheduled_%s_arrival" % arrival_type] != "MISSING":
 		return row["scheduled_%s_arrival" % arrival_type]
 	if row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)] != "MISSING":
@@ -141,6 +175,9 @@ def get_scheduled_arrival(row, arrival_type):
 	return None 
 
 def get_other_arrival_type(arrival_type):
+	"""
+	Quick swapping of runway and gate
+	"""
 	if arrival_type == "runway":
 		return "gate"
 	return "runway"
@@ -149,6 +186,8 @@ def parse_fhe_events(event, e_type):
 	"""
 	Given a data updated event from flight_history_events
 	extract the ERA or EGA times (if any) or else return None
+	If an event does not meet any of these criteria print the event
+	and return None
 	"""
 	if type(event) != str:
 		return None
@@ -170,7 +209,7 @@ def parse_fhe_events(event, e_type):
 def get_most_recent(est_list):
 	"""
 	Given an ordered list, with most recent time first,
-	pick the first entry which is not None
+	pick the first entry which is not None otherwise return None
 	"""
 	for x in est_list:
 		if x:

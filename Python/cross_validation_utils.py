@@ -8,6 +8,15 @@ import random
 
 import leader_board as lb
 
+#
+# This file is currently under construction
+# It will eventually contain the code to:
+# 1. Select valid test data in flight_history.csv (valid according to
+# flight_history_row_in_test_set, which is deemed correct by the
+# Kaggle admins)
+# 2. Run a cross validation using this data set.
+# 3. More?
+#
 
 def main():
 	#x = generate_cutoff_times()
@@ -56,6 +65,8 @@ def test():
 
 	#kf = cross_validation.KFold(4, k=2)
 
+def include_in_test_set(row, ):
+	if 
 
 def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
     """
@@ -86,6 +97,10 @@ def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
     if row["departure_airport_icao_code"] not in us_icao_codes:
         return False
     return True
+
+def get_us_airport_icao_codes(codes_file):
+    df = pd.read_csv(codes_file)
+    return set(df["icao_code"])
 
 
 if __name__=='__main__':

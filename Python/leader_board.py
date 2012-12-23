@@ -1,3 +1,8 @@
+#
+# This file will be deleted and the functions
+# implemented somewhere else
+#
+
 def folder_names():
 	year = "2012"
 	dates = ["11_26","11_27","11_28","11_29","11_30",
