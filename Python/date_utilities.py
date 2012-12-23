@@ -60,9 +60,16 @@ def parse_datetime_format6(datestr):
 # parse dates in flighthistory.csv
 #
 def get_flight_history_date_converter():
+    """ 
+    Dict of which columns, and the function to apply to convert 
+    to datetimes when importing flight_history csv file
+    """
     return {x : to_utc_date for x in get_flight_history_date_columns()}
 
 def get_flight_history_date_columns():
+    """
+    List of the columns which should be converted to datetimes
+    """
     flight_history_date_columns = [
         "published_departure",
         "published_arrival",
@@ -78,6 +85,10 @@ def get_flight_history_date_columns():
     return flight_history_date_columns
 
 def to_utc_date(datestr):
+    """
+    Convert strings imported from csv to datetimes
+    dealing with non-date strings
+    """
     if not datestr or datestr == "MISSING":
         return "MISSING"
     if datestr == "HIDDEN":

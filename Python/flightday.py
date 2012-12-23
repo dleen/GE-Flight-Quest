@@ -33,6 +33,9 @@ class FlightDay:
 
 		
 	def flight_history_id_grouping(self, that_df):
+		"""
+		Description here
+		"""
 		joined_data = pd.merge(left=that_df,     right=self.flight_history_events, on='flight_history_id', how='left', sort=False)
 		joined_data = pd.merge(left=joined_data, right=self.flight_history,        on='flight_history_id', how='left', sort=False)
 
@@ -45,6 +48,9 @@ class FlightDay:
 
 
 def using_most_recent_update(event_group):
+	"""
+	Description here
+	"""
 	event_group = event_group.sort_index(by='date_time_recorded', ascending=False)
 
 	offset = event_group["arrival_airport_timezone_offset"].ix[event_group.index[0]]
@@ -58,21 +64,20 @@ def using_most_recent_update(event_group):
 	era_est = temp.apply(lambda x: parse_fhe_events(x, "ERA"))
 	ega_est = temp.apply(lambda x: parse_fhe_events(x, "EGA"))
 
-	for t1 in era_est:
-		if t1:
-			break
-
-	for t2 in ega_est:
-		if t2:
-			break
-
-	return [t1, t2]
+	return [get_most_recent(era_est) + offset_str,
+			get_most_recent(ega_est) + offset_str]
 
 def parse_fhe_events(event, e_type):
+	"""
+	Given a data updated event from flight_history_events
+	extract the ERA or EGA times (if any) or else return None
+	"""
 	if type(event) != str:
 		return None
 	if e_type not in event:
 		return None
+	# VVV Interesting piece of information --
+	# is EGA calculated just from distance and speed?
 	if event == "EGA- Based on Distance and Airspeed":
 		return None
 
@@ -85,9 +90,13 @@ def parse_fhe_events(event, e_type):
 		return None
 
 def get_most_recent(est_list):
-	for i, row in est_list.iterrows():
-		if row:
-			return row
+	"""
+	Given an ordered list, with most recent time first,
+	pick the first entry which is not None
+	"""
+	for x in est_list:
+		if x:
+			return x
 
 
 
