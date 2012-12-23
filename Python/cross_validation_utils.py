@@ -36,7 +36,8 @@ def generate_cutoff_times():
 
 	for day in range(num_days):
 		db = first_day + datetime.timedelta(days = day, hours=9)
-		interval_beginning = first_day + datetime.timedelta(days = day, hours=interval_beginning_hours_after_midnight_UTC)
+		interval_beginning = first_day + datetime.timedelta(days = day, 
+			hours=interval_beginning_hours_after_midnight_UTC)
 		sct = interval_beginning + datetime.timedelta(hours = random.uniform(0, interval_length))
 		fn = str(db.year) + "_" + str(db.month) + "_" + str(db.day)
 

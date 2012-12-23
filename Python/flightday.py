@@ -29,12 +29,16 @@ class FlightDay:
 			converters = dut.get_flight_history_date_converter())
 
 		self.flight_history_events = \
-			pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" + "FlightHistory/flighthistoryevents.csv",
+			pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" +\
+			 "FlightHistory/flighthistoryevents.csv",
 			converters={"date_time_recorded": dut.parse_datetime_format6})
 
-		self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id', 'actual_runway_arrival', 'actual_gate_arrival'))
+		self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id',
+															  'actual_runway_arrival', 
+															  'actual_gate_arrival'))
 
-		cutoff_time_list = pd.read_csv("../Data/" + data_set_name + "/" "days.csv", index_col='folder_name', parse_dates=[1])
+		cutoff_time_list = pd.read_csv("../Data/" + data_set_name + "/" "days.csv",
+										 index_col='folder_name', parse_dates=[1])
 		self.cutoff_time = cutoff_time_list['selected_cutoff_time'].ix[folder_name]
 
 		self.midnight_time = datetime(self.cutoff_time.year, 
@@ -53,8 +57,10 @@ class FlightDay:
 		of the flight history data in a similar manner.
 		Maybe this second join will be changed to something smarter?
 		"""
-		joined_data = pd.merge(left=that_df,     right=self.flight_history_events, on='flight_history_id', how='left', sort=False)
-		joined_data = pd.merge(left=joined_data, right=self.flight_history,        on='flight_history_id', how='left', sort=False)
+		joined_data = pd.merge(left=that_df,     right=self.flight_history_events, 
+							   on='flight_history_id', how='left', sort=False)
+		joined_data = pd.merge(left=joined_data, right=self.flight_history, 
+							   on='flight_history_id', how='left', sort=False)
 
 		grouped_on_fhid = joined_data.groupby('flight_history_id')
 
@@ -70,7 +76,8 @@ def using_most_recent_updates_all(days_list, data_set_name):
 	print data_set_name
 	for d in days_list:
 		print d,
-		data_test_set = pd.read_csv("../Data/" + data_set_name + "/" + d + "/test_flights.csv", usecols=[0])
+		data_test_set = pd.read_csv("../Data/" + data_set_name + "/" + d + "/test_flights.csv",
+		 usecols=[0])
 		day = FlightDay(d, data_set_name)
 		day_preds = using_most_recent_updates_daily(day, data_test_set)
 	
