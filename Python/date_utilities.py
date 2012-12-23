@@ -117,7 +117,9 @@ def parse_datetime_format1(datestr):
     return dt
 
 def parse_to_utc(datestr):
-    if datestr:
+    if type(datestr) == datetime.datetime:
+        return datestr
+    elif type(datestr) == str:
         return parse(datestr).astimezone(tzutc())
     else:
         return datestr

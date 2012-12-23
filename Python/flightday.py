@@ -3,7 +3,6 @@ import pandas as pd
 from dateutil.tz import tzutc
 from datetime import datetime
 
-
 import date_utilities as dut
 
 class FlightDay:
@@ -31,6 +30,7 @@ class FlightDay:
 									  self.cutoff_time.day, 
 									  tzinfo=tzutc())
 
+		self.folder_name = folder_name
 		self.data_set_name = data_set_name
 
 		
@@ -62,6 +62,7 @@ def using_most_recent_updates_all(days_list, data_set_name):
 		print "...done"
 
 	fin.to_csv('test.csv', index=False)
+	print "All files done!"
 
 def using_most_recent_updates_daily(day, data_test_set):
 	flight_events = day.flight_history_id_grouping(data_test_set)
@@ -82,12 +83,6 @@ def using_most_recent_updates_daily(day, data_test_set):
 	day.flight_predictions['actual_runway_arrival'] = era
 	day.flight_predictions['actual_gate_arrival']   = ega
 
-	day.flight_predictions['actual_runway_arrival'] = \
-		day.flight_predictions['actual_runway_arrival'].apply(dut.parse_to_utc)
-
-	day.flight_predictions['actual_gate_arrival'] = \
-		day.flight_predictions['actual_gate_arrival'].apply(dut.parse_to_utc)
-
 	day.flight_predictions = \
 		day.flight_predictions.fillna(value=day.cutoff_time)
 
@@ -102,13 +97,7 @@ def most_recent_update(event_group):
 	"""
 	event_group = event_group.sort_index(by='date_time_recorded', ascending=False)
 
-	temp = event_group['data_updated']
-
-	era_est_list = temp.apply(lambda x: parse_fhe_events(x, "ERA"))
-	ega_est_list = temp.apply(lambda x: parse_fhe_events(x, "EGA"))
-
-	era_est = get_most_recent(era_est_list)
-	ega_est = get_most_recent(ega_est_list)
+	event_list = event_group['data_updated']
 
 	offset = event_group["arrival_airport_timezone_offset"].ix[event_group.index[0]]
 	if offset>0:
@@ -116,40 +105,40 @@ def most_recent_update(event_group):
 	else:
 		offset_str = str(offset)
 
-	if era_est:
-		era_est = era_est + offset_str
+	era_est = get_updated_arrival(event_list, event_group.ix[event_group.index[0]],
+								  "runway", offset_str)
 
-	if ega_est:
-		ega_est = ega_est + offset_str
+	ega_est = get_updated_arrival(event_list, event_group.ix[event_group.index[0]],
+								  "gate", offset_str)
 
 	return [era_est, ega_est]
 
-def get_updated_arrival(event_list, row, arrival_type, cutoff_time, offset):
-	if arrival_type == "runway"
+def get_updated_arrival(event_list, row, arrival_type, offset_str):
+	if arrival_type == "runway":
 		sig = "ERA"
 	elif arrival_type == "gate":
 		sig = "EGA"
 	else:
 		print "Problem with signal type!"
 
-	est_list = temp.apply(lambda x: parse_fhe_events(x, "ERA"))
+	est_list = event_list.apply(lambda x: parse_fhe_events(x, sig))
+	est = get_most_recent(est_list)
 
+	if est:
+		est = dut.parse_to_utc(est + offset_str)
+	else:
+		est = get_scheduled_arrival(row, arrival_type)
 
-def get_scheduled_arrival(row, arrival_type, cutoff_time):
+	return est
+
+def get_scheduled_arrival(row, arrival_type):
 	if row["scheduled_%s_arrival" % arrival_type] != "MISSING":
 		return row["scheduled_%s_arrival" % arrival_type]
 	if row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)] != "MISSING":
 		return row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)]
 	if row["published_arrival"] != "MISSING":
 		return row["published_arrival"]
-	return cutoff_time 
-
-def get_estimated_arrival(row, arrival_type, cutoff_time):
-	if row["estimated_%s_arrival" % arrival_type] != "MISSING":
-		return row["estimated_%s_arrival" % arrival_type]
-	if row["estimated_%s_arrival" % get_other_arrival_type(arrival_type)] != "MISSING":
-			return row["estimated_%s_arrival" % get_other_arrival_type(arrival_type)]
-	return get_scheduled_arrival(row, arrival_type, cutoff_time)
+	return None 
 
 def get_other_arrival_type(arrival_type):
 	if arrival_type == "runway":
@@ -186,3 +175,4 @@ def get_most_recent(est_list):
 	for x in est_list:
 		if x:
 			return x
+	return None
