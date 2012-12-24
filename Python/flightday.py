@@ -4,6 +4,7 @@ from dateutil.tz import tzutc
 from datetime import datetime
 
 import date_utilities as dut
+import test_data_utils as tdu
 
 class FlightDay:
 	"""
@@ -29,7 +30,7 @@ class FlightDay:
 			converters = dut.get_flight_history_date_converter())
 
 		self.flight_history_events = \
-			pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" +\
+			pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" + \
 			 "FlightHistory/flighthistoryevents.csv",
 			converters={"date_time_recorded": dut.parse_datetime_format6})
 
@@ -37,8 +38,12 @@ class FlightDay:
 			'actual_runway_arrival', 
 			'actual_gate_arrival'))
 
-		cutoff_time_list = pd.read_csv("../Data/" + data_set_name + "/" "days.csv",
-			index_col='folder_name', parse_dates=[1])
+		if data_set_name == "PublicLeaderboardSet":
+			cutoff_time_list = pd.read_csv("../Data/" + data_set_name + "/" "days.csv",
+				index_col='folder_name', parse_dates=[1])
+		else:
+			cutoff_time_list = tdu.generate_cutoff_times()
+
 		self.cutoff_time = cutoff_time_list['selected_cutoff_time'].ix[folder_name]
 
 		self.midnight_time = datetime(self.cutoff_time.year, 
@@ -49,7 +54,20 @@ class FlightDay:
 		self.folder_name = folder_name
 		self.data_set_name = data_set_name
 
-		
+		self.test_data = pd.DataFrame(None)
+
+		if data_set_name == "PublicLeaderboardSet":
+			self.test_data = \
+				pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
+		 		usecols=[0])
+
+	def generate_test_data(self):
+		if self.data_set_name == "PublicLeaderboardSet":
+			print "You don't need to do this."
+		else:
+			codes = tdu.get_us_airport_icao_codes("../Data/Reference/usairporticaocodes.txt")
+			self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
+
 	def flight_history_id_grouping(self, that_df):
 		"""
 		This function does a "left join" (exactly like SQL join) using the test data flight ids
@@ -76,6 +94,7 @@ def using_most_recent_updates_all(days_list, data_set_name):
 	print data_set_name
 	for d in days_list:
 		print d,
+		# Make this more flexible?
 		data_test_set = pd.read_csv("../Data/" + data_set_name + "/" + d + "/test_flights.csv",
 		 usecols=[0])
 		day = FlightDay(d, data_set_name)

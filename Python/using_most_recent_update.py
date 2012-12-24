@@ -48,7 +48,15 @@ def main():
 	# Run model using the most recently updated estimates of 
 	# the runway arrival and the gate arrival as the predictions 
 	# for the actual arrival times:
-	fd.using_most_recent_updates_all(fn, data_set_main)
+	#fd.using_most_recent_updates_all(fn, data_set_main)
+
+	x = fd.FlightDay(fn[0], data_set_main)
+	print x.flight_history
+	print x.test_data
+
+	x.generate_test_data()
+
+	print x.test_data
 
 if __name__=='__main__':
  	main()
