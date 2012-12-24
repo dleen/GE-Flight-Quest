@@ -44,7 +44,7 @@ def parse_datetime_format6(datestr):
         microseconds=0
     else:
         microseconds = int(microseconds) * (10**(6-len(microseconds)))
-   
+
     dt = datetime.datetime(int(datestr[:4]),
                            int(datestr[5:7]),
                            int(datestr[8:10]),
@@ -123,3 +123,31 @@ def parse_to_utc(datestr):
         return parse(datestr).astimezone(tzutc())
     else:
         return datestr
+
+def parse_datetime_format3(datestr):
+    """
+    Doing this manually for efficiency
+
+    Format: 2012-11-13 14:45:41.964-08
+    Alternative: 2012-11-13 15:03:16.62-08
+    Year-Month-Day Hour:Minute:Second.Milliseconds-TimeZoneUTCOffsetInHours
+
+    Converts into UTC
+    """
+    microseconds = datestr[20:-3]
+    if not microseconds:
+        microseconds=0
+    else:
+        microseconds = int(microseconds) * (10**(6-len(microseconds)))
+   
+    dt = datetime.datetime(int(datestr[:4]),
+                           int(datestr[5:7]),
+                           int(datestr[8:10]),
+                           int(datestr[11:13]),
+                           int(datestr[14:16]),
+                           int(datestr[17:19]),
+                           microseconds,
+                           tzoffset(None, int(datestr[-3:]) * 3600))
+
+    dt = dt.astimezone(tzutc())
+    return dt

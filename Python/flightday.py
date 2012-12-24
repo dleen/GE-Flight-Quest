@@ -29,10 +29,15 @@ class FlightDay:
 			"/" + folder_name + "/" + "FlightHistory/flighthistory.csv",
 			converters = dut.get_flight_history_date_converter())
 
+		if data_set_name == "PublicLeaderboardSet":
+			conv = dut.parse_datetime_format6
+		else:
+			conv = dut.parse_datetime_format3
+
 		self.flight_history_events = \
 			pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" + \
 			 "FlightHistory/flighthistoryevents.csv",
-			converters={"date_time_recorded": dut.parse_datetime_format6})
+			converters={"date_time_recorded": conv})
 
 		self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id',
 			'actual_runway_arrival', 
@@ -60,22 +65,39 @@ class FlightDay:
 			self.test_data = \
 				pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
 		 		usecols=[0])
+		else:
+			codes = tdu.get_us_airport_icao_codes("../Data/Reference/usairporticaocodes.txt")
+			self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
 
-	def generate_test_data(self):
+	def generate_new_cutoff_times(self):
+		"""
+		Description
+		"""
+		if self.data_set_name == "PublicLeaderboardSet":
+			print "You don't need to do this."
+		else:
+			cutoff_time_list = tdu.generate_cutoff_times()
+			# Fix folder names, currently static. They need to change?
+			self.cutoff_time = cutoff_time_list['selected_cutoff_time'].ix[self.folder_name]
+
+	def generate_new_test_data(self):
+		"""
+		Description
+		"""
 		if self.data_set_name == "PublicLeaderboardSet":
 			print "You don't need to do this."
 		else:
 			codes = tdu.get_us_airport_icao_codes("../Data/Reference/usairporticaocodes.txt")
 			self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
 
-	def flight_history_id_grouping(self, that_df):
+	def flight_history_id_grouping(self):
 		"""
 		This function does a "left join" (exactly like SQL join) using the test data flight ids
 		as the left data and the flight history events as the right data. We then join the rest
 		of the flight history data in a similar manner.
 		Maybe this second join will be changed to something smarter?
 		"""
-		joined_data = pd.merge(left=that_df,     right=self.flight_history_events, 
+		joined_data = pd.merge(left=self.test_data, right=self.flight_history_events, 
 							   on='flight_history_id', how='left', sort=False)
 		joined_data = pd.merge(left=joined_data, right=self.flight_history, 
 							   on='flight_history_id', how='left', sort=False)
@@ -94,11 +116,8 @@ def using_most_recent_updates_all(days_list, data_set_name):
 	print data_set_name
 	for d in days_list:
 		print d,
-		# Make this more flexible?
-		data_test_set = pd.read_csv("../Data/" + data_set_name + "/" + d + "/test_flights.csv",
-		 usecols=[0])
 		day = FlightDay(d, data_set_name)
-		day_preds = using_most_recent_updates_daily(day, data_test_set)
+		day_preds = using_most_recent_updates_daily(day)
 	
 		fin = pd.concat([fin, day_preds])
 		print "...done"
@@ -106,14 +125,14 @@ def using_most_recent_updates_all(days_list, data_set_name):
 	fin.to_csv('test.csv', index=False)
 	print "All files done!"
 
-def using_most_recent_updates_daily(day, data_test_set):
+def using_most_recent_updates_daily(day):
 	"""
 	Given a day of flights calculates the most recent update for runway and
 	gate arrival for each of the flights. Enters this into the flight prediction
 	dataframe. Replaces any missing values with just the value of the cutoff time.
 	Finally converts the predictions to minutes past midnight.
 	"""
-	flight_events = day.flight_history_id_grouping(data_test_set)
+	flight_events = day.flight_history_id_grouping()
 
 	fid = []
 	era = [] 

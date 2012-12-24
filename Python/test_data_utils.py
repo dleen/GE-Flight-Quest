@@ -53,7 +53,8 @@ def generate_cutoff_times():
 		 'selected_cutoff_time' : selected_cutoff_time,
 		 'folder_name' : folder_names}
 
-	cutoff_times = pd.DataFrame(d, columns=('day_beginning', 'selected_cutoff_time', 'folder_name'))
+	cutoff_times = pd.DataFrame(d, columns=('day_beginning', 'selected_cutoff_time', 'folder_name'),
+		index=folder_names)
 
 	return cutoff_times
 
