@@ -5,6 +5,7 @@ from datetime import datetime
 
 import date_utilities as dut
 import test_data_utils as tdu
+import rmse
 
 class FlightDay:
 	"""
@@ -23,7 +24,7 @@ class FlightDay:
     midnight_time: this is the midnight against which we start counting the minutes until arrival
 	"""
 
-	def __init__(self, folder_name, data_set_name):
+	def __init__(self, folder_name, data_set_name, mode):
 		self.flight_history = \
 			pd.read_csv("../Data/" + data_set_name + \
 			"/" + folder_name + "/" + "FlightHistory/flighthistory.csv",
@@ -58,16 +59,19 @@ class FlightDay:
 
 		self.folder_name = folder_name
 		self.data_set_name = data_set_name
+		self.mode = mode
 
 		self.test_data = pd.DataFrame(None)
 
-		if data_set_name == "PublicLeaderboardSet":
+		if mode == "leaderboard":
 			self.test_data = \
 				pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
 		 		usecols=[0])
-		else:
-			codes = tdu.get_us_airport_icao_codes("../Data/Reference/usairporticaocodes.txt")
+		elif mode == "training":
+			codes = tdu.get_us_airport_icao_codes()
 			self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
+		else:
+			print "Not a valid option!"
 
 	def generate_new_cutoff_times(self):
 		"""
@@ -87,7 +91,7 @@ class FlightDay:
 		if self.data_set_name == "PublicLeaderboardSet":
 			print "You don't need to do this."
 		else:
-			codes = tdu.get_us_airport_icao_codes("../Data/Reference/usairporticaocodes.txt")
+			codes = tdu.get_us_airport_icao_codes()
 			self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
 
 	def flight_history_id_grouping(self):
@@ -106,24 +110,44 @@ class FlightDay:
 
 		return grouped_on_fhid
 
-def using_most_recent_updates_all(days_list, data_set_name):
+def run_model(days_list, data_set_name, mode):
+	[fin, tst] = using_most_recent_updates_all(days_list, data_set_name, mode)
+
+	if mode == "leaderboard":
+		fin.to_csv('test.csv', index=False)
+		print "All files done!"
+		print "Predictions written to csv file in Python folder."
+	elif mode == "training":
+		# print to log file rmse score
+		return calculate_rmse_score(fin, tst)
+	else:
+		print "Not an option!"
+
+def calculate_rmse_score(fin, tst):
+	combined_on_id = pd.merge(left=tst, right=fin,
+		on='flight_history_id', suffixes=('_predicted', '_actual'),  sort=False)
+
+	return rmse.rmse_final(combined_on_id)
+	
+def using_most_recent_updates_all(days_list, data_set_name, mode):
 	"""
 	Runs the most recent update model for each day in the dataset and returns the result to a 
 	csv file in the python directory.
 	"""
 	fin = pd.DataFrame(columns=('flight_history_id', 'actual_runway_arrival', 'actual_gate_arrival'))
+	tst = pd.DataFrame(columns=('flight_history_id', 'actual_runway_arrival', 'actual_gate_arrival'))
 
 	print data_set_name
 	for d in days_list:
 		print d,
-		day = FlightDay(d, data_set_name)
-		day_preds = using_most_recent_updates_daily(day)
+		day = FlightDay(d, data_set_name, mode)
+		day = using_most_recent_updates_daily(day)
 	
-		fin = pd.concat([fin, day_preds])
+		fin = pd.concat([fin, day.flight_predictions])
+		tst = pd.concat([tst, day.test_data])
 		print "...done"
 
-	fin.to_csv('test.csv', index=False)
-	print "All files done!"
+	return [fin, tst]
 
 def using_most_recent_updates_daily(day):
 	"""
@@ -156,7 +180,11 @@ def using_most_recent_updates_daily(day):
 	day.flight_predictions = \
 		dut.convert_predictions_from_datetimes_to_minutes(day.flight_predictions, day.midnight_time)
 
-	return day.flight_predictions
+	if day.mode == "training": 
+		day.test_data = \
+			dut.convert_predictions_from_datetimes_to_minutes(day.test_data, day.midnight_time)
+
+	return day
 
 def most_recent_update(event_group):
 	"""
@@ -240,7 +268,8 @@ def parse_fhe_events(event, e_type):
 		return None
 	# VVV (Below) Interesting piece of information --
 	# is EGA calculated just from distance and speed?
-	if event == "EGA- Based on Distance and Airspeed":
+	if event in ["EGA- Based on Distance and Airspeed",
+	"EGA- Based on Flight Histories"]:
 		return None
 
 	est = re.search('(%s-.*?(?<=New=))(?P<dt>\d\d/\d\d/\d\d \d\d:\d\d)'%e_type, event)

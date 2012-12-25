@@ -71,7 +71,7 @@ def test():
 		"/" + cutoff['folder_name'][0] + "/" + "FlightHistory/flighthistory.csv",
 		converters = dut.get_flight_history_date_converter())
 
-	codes = get_us_airport_icao_codes("../Data/Reference/usairporticaocodes.txt")
+	codes = get_us_airport_icao_codes()
 
 
 
@@ -138,8 +138,8 @@ def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
 		return False
 	return True
 
-def get_us_airport_icao_codes(codes_file):
-    df = pd.read_csv(codes_file)
+def get_us_airport_icao_codes():
+    df = pd.read_csv("../Data/Reference/usairporticaocodes.txt")
     return set(df["icao_code"])
 
 if __name__=='__main__':

@@ -3,6 +3,9 @@ import leader_board as lb
 
 import flightday as fd
 
+from multiprocessing import Pool
+
+
 def folder_names_test_set():
 	'''
 	Returns a list of folders containing data for the individual days
@@ -50,28 +53,32 @@ def main():
 	The current model uses the most recent arrival update which
 	can be found in flight_history_events.csv
 	"""
-	# Returns list of the folder names to be opened
-	fn = folder_names_init_set()
-	#fn = folder_names_test_set()
 
-	# Name of the main data folder
-	#data_set_name = "PublicLeaderboardSet"
-	data_set_name = "InitialTrainingSet_rev1"
-
+	mode = "training"
 
 	# Run model using the most recently updated estimates of 
 	# the runway arrival and the gate arrival as the predictions 
 	# for the actual arrival times:
-	fd.using_most_recent_updates_all(fn, data_set_name)
+	if mode == "leaderboard":
+		fn = folder_names_test_set()
+		data_set_name = "PublicLeaderboardSet"
 
-	# x = fd.FlightDay(fn[10], data_set_name)
-	# print x.flight_history
-	# print x.test_data
+		fd.run_model(fn, data_set_name, mode)
+	elif mode == "training":
+		fn = folder_names_init_set()
+		data_set_name = "InitialTrainingSet_rev1"
 
-	# x.generate_new_cutoff_times()
-	# x.generate_new_test_data()
+		rmse = []
+		for i in range(10):
+			temp = fd.run_model(fn, data_set_name, mode)
+			print temp
+			rmse.append(temp)
 
-	# print x.test_data
+		print rmse
+		print sum(rmse) / float(len(rmse))
+	else:
+		print "Not a valid option!"
 
 if __name__=='__main__':
- 	main()
+	main()
+
