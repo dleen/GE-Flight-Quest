@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def rmse_fun(actual, predicted):
 	"""
@@ -30,3 +31,9 @@ def rmse_final(data):
 		data['actual_runway_arrival_predicted'].values)
 
 	return 0.75 * rmse_gate + 0.25 * rmse_run
+
+def calculate_rmse_score(fin, tst):
+    combined_on_id = pd.merge(left=tst, right=fin,
+        on='flight_history_id', suffixes=('_predicted', '_actual'),  sort=False)
+
+    return rmse_final(combined_on_id)
