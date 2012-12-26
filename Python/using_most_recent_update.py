@@ -4,6 +4,7 @@ import model_most_recent_update as mmru
 
 
 
+
 def main():
     """
     Main file.
@@ -49,24 +50,22 @@ def main():
     # the runway arrival and the gate arrival as the predictions 
     # for the actual arrival times:
 
+    most_recent     = mmru.MRU()
+    most_recent_old = mmru.MRU_update()
+
     if mode == "leaderboard":
         fn = folder_names_test_set()
         data_set_name = "PublicLeaderboardSet"
 
-        mmru.run_model(fn, data_set_name, mode)
+        mmru.run_model(most_recent, None, fn, data_set_name, mode)
     elif mode == "training":
         fn = folder_names_init_set()
         data_set_name = "InitialTrainingSet_rev1"
+
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        rmse = []
-        for i in range(1):
-            temp = mmru.run_model(fn, data_set_name, mode, cutoff_file)
-            print temp
-            rmse.append(temp)
-
-        print rmse
-        print sum(rmse) / float(len(rmse))
+        temp = mmru.run_model(most_recent_old, most_recent, fn, data_set_name, mode, cutoff_file)
+        print temp
     else:
         print "Not a valid option!"
 

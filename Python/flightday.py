@@ -28,28 +28,25 @@ class FlightDay:
         self.data_set_name = data_set_name
         self.mode = mode
 
-        print "\tLoading flight_history.csv...",
-        self.flight_history = \
-            pd.read_csv("../Data/" + data_set_name + \
-            "/" + folder_name + "/" + "FlightHistory/flighthistory.csv",
-            converters = dut.get_flight_history_date_converter())
-        print "done"
+        if mode != "nodata":
+            print "\tLoading flight_history.csv...",
+            self.flight_history = \
+                pd.read_csv("../Data/" + data_set_name + \
+                "/" + folder_name + "/" + "FlightHistory/flighthistory.csv",
+                converters = dut.get_flight_history_date_converter())
+            print "done"
 
-        if data_set_name == "PublicLeaderboardSet":
-            conv = dut.parse_datetime_format6
-        else:
-            conv = dut.parse_datetime_format3
+            if data_set_name == "PublicLeaderboardSet":
+                conv = dut.parse_datetime_format6
+            else:
+                conv = dut.parse_datetime_format3
 
-        print "\tLoading flight_history_events.csv...",
-        self.flight_history_events = \
-            pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" + \
-             "FlightHistory/flighthistoryevents.csv",
-            converters={"date_time_recorded": conv})
-        print "done"
-
-        self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id',
-            'actual_runway_arrival', 
-            'actual_gate_arrival'))
+            print "\tLoading flight_history_events.csv...",
+            self.flight_history_events = \
+                pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" + \
+                 "FlightHistory/flighthistoryevents.csv",
+                converters={"date_time_recorded": conv})
+            print "done"            
 
         self.load_cutoff_times(cutoff_filename)
 
@@ -57,8 +54,6 @@ class FlightDay:
                                       self.cutoff_time.month, 
                                       self.cutoff_time.day, 
                                       tzinfo=tzutc())
-
-        self.test_data = pd.DataFrame(None)
 
         if mode == "leaderboard":
             print "\tLoading test flights data set...",
@@ -72,6 +67,7 @@ class FlightDay:
             self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
             print "done"
         else:
+            self.test_data = pd.DataFrame(None)
             print "Not a valid option!"
 
     def save_cutoff_times(self, filename):
@@ -135,3 +131,15 @@ class FlightDay:
         grouped_on_fhid = joined_data.groupby('flight_history_id')
 
         return grouped_on_fhid
+
+class FlightPredictions:
+    """
+    Description
+    """
+    def __init__(self):
+        self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id',
+            'actual_runway_arrival', 
+            'actual_gate_arrival'))
+
+        self.test_data = pd.DataFrame(None)
+
