@@ -142,4 +142,3 @@ class FlightPredictions:
             'actual_gate_arrival'))
 
         self.test_data = pd.DataFrame(None)
-

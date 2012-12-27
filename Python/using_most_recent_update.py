@@ -1,6 +1,7 @@
-
 import flightday as fd
 import model_most_recent_update as mmru
+import model_MRU_with_gate_delay_est as mgde
+from run_model import run_model
 
 def main():
     """
@@ -29,8 +30,8 @@ def main():
     """
 
     #mode = "nodata"
-    #mode = "training"
-    mode = "just_testing"
+    mode = "training"
+    #mode = "just_testing"
     #mode = "leaderboard"
 
     fn = folder_names_init_set()
@@ -41,7 +42,7 @@ def main():
     # for the actual arrival times:
 
     most_recent     = mmru.MRU()
-    most_recent_upd = mmru.MRU_update()
+    most_recent_upd = mgde.MRU_with_gate_delay_est()
 
     if mode == "leaderboard":
 
@@ -57,7 +58,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = mmru.run_model(most_recent_upd, most_recent, fn, data_set_name, mode, cutoff_file)
+        temp = run_model(most_recent_upd, most_recent, fn, data_set_name, mode, cutoff_file)
         print temp
 
     elif mode == "just_testing":
@@ -66,7 +67,7 @@ def main():
         data_set_name = "InitialTrainingSet_rev1"
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
-        
+
     else:
         print "Not a valid option!"
 
@@ -96,4 +97,3 @@ def folder_names_init_set():
 
 if __name__=='__main__':
     main()
-

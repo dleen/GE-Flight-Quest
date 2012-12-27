@@ -1,3 +1,4 @@
 2012-12-27 14:46:39.384326: Using model(s): Updated Model, Original model. Scores: {'Original model': 7.9219294263921505, 'Updated Model': 10.112598516986344}. Using mode: training. Using cutoff data: 
 2012-12-27 14:54:22.840941: Using model(s): Updated Model, Original model. Scores: {'Original model': 7.1651443229493701, 'Updated Model': 8.0923350919520534}. Using mode: training. Using cutoff data: cutoff_time_list_my_cutoff.csv
 2012-12-27 16:01:52.050860: Using model(s): Updated Model, Original model. Scores: {'Original model': 8.0923350919520534, 'Updated Model': 8.0923350919520534}. Using mode: training. Using cutoff data: cutoff_time_list_my_cutoff.csv
+2012-12-27 17:09:16.004352: Using model(s): Avg gate time by airport model, Original model. Scores: {'Original model': 8.0923350919520534, 'Avg gate time by airport model': 8.0923350919520534}. Using mode: training. Using cutoff data: cutoff_time_list_my_cutoff.csv
