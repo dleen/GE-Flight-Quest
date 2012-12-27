@@ -22,11 +22,11 @@ class FlightDay:
 
     midnight_time: this is the midnight against which we start counting the minutes until arrival
     """
-
     def __init__(self, folder_name, data_set_name, mode, cutoff_filename=""):
         self.folder_name = folder_name
         self.data_set_name = data_set_name
         self.mode = mode
+        self.cutoff_filename = cutoff_filename
 
         if mode != "nodata":
             print "\tLoading flight_history.csv...",
@@ -60,7 +60,7 @@ class FlightDay:
             self.test_data = \
                 pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
                 usecols=[0])
-            print "done"
+            print "done"            
         elif mode == "training":
             print "\tCreating test flight data set...",
             codes = tdu.get_us_airport_icao_codes()
@@ -134,7 +134,7 @@ class FlightDay:
 
 class FlightPredictions:
     """
-    Description
+    Holds information for predictions and test data corresponding to the predictions
     """
     def __init__(self):
         self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id',

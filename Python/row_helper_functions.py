@@ -7,12 +7,27 @@ def get_scheduled_arrival(row, arrival_type):
     use the opposite type information before moving onto the next column of 
     data. Return None is all data is missing
     """
-    if row["scheduled_%s_arrival" % arrival_type] != "MISSING":
+    if row["scheduled_%s_arrival" % arrival_type] not in ["MISSING", "HIDDEN"]:
         return row["scheduled_%s_arrival" % arrival_type]
-    if row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)] != "MISSING":
+    if row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)] not in ["MISSING", "HIDDEN"]:
         return row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)]
-    if row["published_arrival"] != "MISSING":
+    if row["published_arrival"] not in ["MISSING", "HIDDEN"]:
         return row["published_arrival"]
+    return get_scheduled_departure(row, arrival_type)
+
+def get_scheduled_departure(row, arrival_type):
+    """
+    Try each of the columns containing departure information in order
+    of perceived importance. If one type runway or gate cannot be found
+    use the opposite type information before moving onto the next column of 
+    data. Return None is all data is missing
+    """
+    if row["scheduled_%s_departure" % arrival_type] not in ["MISSING", "HIDDEN"]:
+        return row["scheduled_%s_departure" % arrival_type]
+    if row["scheduled_%s_departure" % get_other_arrival_type(arrival_type)] not in ["MISSING", "HIDDEN"]:
+        return row["scheduled_%s_departure" % get_other_arrival_type(arrival_type)]
+    if row["published_departure"] not in ["MISSING", "HIDDEN"]:
+        return row["published_departure"]
     return None 
 
 def get_other_arrival_type(arrival_type):

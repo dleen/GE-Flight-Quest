@@ -1,3 +1,4 @@
+import datetime
 import flightday as fd
 import date_utilities as dut
 import test_data_utils as tdu
@@ -15,8 +16,6 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
     Runs the most recent update model for each day in the dataset and returns the result to a 
     csv file in the python directory.
     """
-    pred = fd.FlightPredictions()
-
     fin_A = fd.FlightPredictions()
     fin_B = fd.FlightPredictions()
 
@@ -31,18 +30,10 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
 
         day = fd.FlightDay(d, data_set_name, mode, cutoff_filename)
 
-        print "\tStarting model: '{}'...".format(model_A),
-        pred = model_A.using_most_recent_updates_individual_day(day, pred)
-        fin_A.flight_predictions = pd.concat([fin_A.flight_predictions, pred.flight_predictions])
-        fin_A.test_data          = pd.concat([fin_A.test_data, pred.test_data])
-        print "done"
+        fin_A = return_predictions(model_A, day, fin_A)
 
         if model_B != None:
-            print "\tStarting model: '{}'...".format(model_B),
-            pred = model_B.using_most_recent_updates_individual_day(day, pred)
-            fin_B.flight_predictions = pd.concat([fin_B.flight_predictions, pred.flight_predictions])
-            fin_B.test_data          = pd.concat([fin_B.test_data, pred.test_data])
-            print "done"
+            fin_B = return_predictions(model_B, day, fin_B)
 
         print "\tDay {} has finished".format(d)
         print ""
@@ -50,12 +41,14 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
     print "All days in {} are done!".format(data_set_name)
 
     if mode == "leaderboard":
+
         fin_A.flight_predictions.to_csv('test.csv', index=False)
         print "Predictions written to csv file in Python folder."
         if model_B != None:
             print "Warning: we have disregarded the output of '{}'!".format(model_B)
+
     elif mode == "training":
-        # print to log file rmse score
+
         score_A = rmse.calculate_rmse_score(fin_A.flight_predictions, fin_A.test_data)
 
         if model_B != None:
@@ -63,10 +56,35 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
         else:
             score_B = None
 
-        return {str(model_A) : score_A, 
-                str(model_B) : score_B}
+        scores = {str(model_A) : score_A, 
+                  str(model_B) : score_B}
+
+        log_predictions(day, model_A, model_B, scores, "scores.log")
+
+        return scores
+
     else:
         print "Not an option!"
+
+def return_predictions(model, day, fin):
+    """
+    Takes in a model, a day of data and a dataframe for holding the predictions.
+    It runs the model, stores the predictions and concatenates them with fin
+    which holds the predictions from the other days.
+    """
+    print "\tStarting model: '{}'...".format(model),
+    pred = fd.FlightPredictions()
+    pred = model.using_most_recent_updates_individual_day(day, pred)
+    fin.flight_predictions = pd.concat([fin.flight_predictions, pred.flight_predictions])
+    fin.test_data          = pd.concat([fin.test_data, pred.test_data])
+    print "done"
+
+    return fin
+
+def log_predictions(day, model_A, model_B, scores, filename):
+    with open(filename, "a+b") as f:
+        f.write("{}: Using model(s): {}, {}. Scores: {}. Using mode: {}. Using cutoff data: {}\n"\
+            .format(datetime.datetime.now(), model_A, model_B, scores, day.mode, day.cutoff_filename))
 
 class MRU:
     """
@@ -87,7 +105,7 @@ class MRU:
         fid = []; era = []; ega = []
 
         for flight_id, event_group in flight_events:
-            [er, eg] = self.most_recent_update(event_group)
+            [er, eg] = self.find_most_recent_event_update(event_group)
             fid.append(flight_id)
             era.append(er)
             ega.append(eg)
@@ -112,7 +130,7 @@ class MRU:
 
         return pred
 
-    def most_recent_update(self, event_group):
+    def find_most_recent_event_update(self, event_group):
         """
         Takes in a group of events corresponding to one flight history id.
         Parses the events looking for estimated runway arrival or gate updates
@@ -128,18 +146,22 @@ class MRU:
         else:
             offset_str = str(offset)
 
-        era_est = self.get_updated_arrival(event_list, event_group.ix[event_group.index[0]],
+        era_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
             "runway", offset_str)
 
-        ega_est = self.get_updated_arrival(event_list, event_group.ix[event_group.index[0]],
+        ega_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
             "gate", offset_str)
+
+        if era_est > ega_est:
+            # VV Improves score on Kaggle, worsens training set score
+            ega_est = era_est
 
         return [era_est, ega_est]
 
-    def get_updated_arrival(self, event_list, row, arrival_type, offset_str):
+    def get_updated_event_arrival(self, event_list, row, arrival_type, offset_str):
         """
         Returns the most recent estimate of the arrival time. If that
-        cannot be found resorts to using the scheduled arrival times.
+        cannot be found it resorts to using the scheduled arrival times.
         """
         if arrival_type == "runway":
             sig = "ERA"
@@ -169,35 +191,15 @@ class MRU:
         return None
 
 class MRU_update(MRU):
+    """
+    This class allows us to make slight changes to our model by "overloading"
+    the functions we want to make changes to.
+    """
     def __repr__(self):
+        """
+        This is a descriptive name for the model for use in strings
+        """
         return "Updated Model"
 
-    def most_recent_update(self, event_group):
-        """
-        Takes in a group of events corresponding to one flight history id.
-        Parses the events looking for estimated runway arrival or gate updates
-        and returns the most recent update for each.
-        """
-        event_group = event_group.sort_index(by='date_time_recorded', ascending=False)
+    
 
-        event_list = event_group['data_updated']
-
-        offset = event_group["arrival_airport_timezone_offset"].ix[event_group.index[0]]
-        if offset>0:
-            offset_str = "+" + str(offset)
-        else:
-            offset_str = str(offset)
-
-        era_est = self.get_updated_arrival(event_list, event_group.ix[event_group.index[0]],
-            "runway", offset_str)
-
-        ega_est = self.get_updated_arrival(event_list, event_group.ix[event_group.index[0]],
-            "gate", offset_str)
-
-        if era_est > ega_est:
-            #era_est = ega_est
-            ega_est = era_est
-
-        return [era_est, ega_est]
-
-        

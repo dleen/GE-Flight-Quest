@@ -23,7 +23,7 @@ def convert_predictions_from_datetimes_to_minutes(df_predictions,
 
 def minutes_difference(datetime1, datetime2):
     """ Returns the minutes difference between two datetimes """
-    diff = datetime1 - datetime2
+    diff = datetime1.astimezone(tzutc()) - datetime2.astimezone(tzutc())
     return diff.days*24*60+diff.seconds/60
 
 #
@@ -94,7 +94,7 @@ def to_utc_date(datestr):
         return "MISSING"
     if datestr == "HIDDEN":
         return "HIDDEN"
-    return parse_datetime_format1(datestr)
+    return parse_datetime_format1(datestr).astimezone(tzutc())
 
 def parse_datetime_format1(datestr):
     """
@@ -118,7 +118,7 @@ def parse_datetime_format1(datestr):
 
 def parse_to_utc(datestr):
     if type(datestr) == datetime.datetime:
-        return datestr
+        return datestr.astimezone(tzutc())
     elif type(datestr) == str:
         return parse(datestr).astimezone(tzutc())
     else:
@@ -148,6 +148,5 @@ def parse_datetime_format3(datestr):
                            int(datestr[17:19]),
                            microseconds,
                            tzoffset(None, int(datestr[-3:]) * 3600))
-
     dt = dt.astimezone(tzutc())
     return dt

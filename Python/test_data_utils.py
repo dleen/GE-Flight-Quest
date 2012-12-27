@@ -4,19 +4,10 @@ from dateutil import parser
 import pytz
 import random
 
-#
-# This file is currently under construction
-# It will eventually contain the code to:
-# 1. Select valid test data in flight_history.csv (valid according to
-# flight_history_row_in_test_set, which is deemed correct by the
-# Kaggle admins)
-# 2. Run a cross validation using this data set.
-# 3. More?
-#
-
 def generate_cutoff_times():
     """
-    Description
+    Generate a random cutoff time between using the same method as
+    Kaggle. Returns a list of cutoff times, one for each day in the data
     """
     num_days = 14
     first_day = parser.parse("2012-11-12")
@@ -50,7 +41,9 @@ def generate_cutoff_times():
 
 def select_valid_rows(df, cutoff_time, codes):
     """
-    Description
+    Given a flight history select rows for inclusion in the test set using
+    the function flight_history_row_in_test_set which is given by the Kaggle
+    admins
     """
     sel_rows = []
 
@@ -62,9 +55,9 @@ def select_valid_rows(df, cutoff_time, codes):
 
 def get_departure_time(row):
     """
-    Description
+    Try to select a valid departure time from the available ones
     """
-    if row['published_departure'] != "MISSING":
+    if row["published_departure"] != "MISSING":
         return row["published_departure"]
     if row["scheduled_gate_departure"] != "MISSING":
         return row["scheduled_gate_departure"]
@@ -78,26 +71,28 @@ def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
     meets the other requirements to be a test row (continental US flight)
     """
     departure_time = get_departure_time(row)
-    if departure_time == "MISSING":
-        return False
     if departure_time > cutoff_time:
         return False
-    if row["actual_gate_departure"] in ["MISSING", "HIDDEN"]:
+    if row["actual_gate_departure"] == "MISSING":
         return False
-    if row["actual_runway_departure"] in ["MISSING", "HIDDEN"]:
+    if row["actual_runway_departure"] == "MISSING":
         return False
-    if row["actual_runway_departure"] > cutoff_time:
+    if row["actual_runway_departure"] != "HIDDEN":
+        if row["actual_runway_departure"] > cutoff_time:
+            return False
+    if row["actual_runway_arrival"] == "MISSING":
         return False
-    if row["actual_runway_arrival"] in ["MISSING", "HIDDEN"]:
+    if row["actual_runway_arrival"] != "HIDDEN":
+        if row["actual_runway_arrival"] <= cutoff_time:
+            return False
+    if row["actual_gate_arrival"] == "MISSING":
         return False
-    if row["actual_runway_arrival"] <= cutoff_time:
-        return False
-    if row["actual_gate_arrival"] in ["MISSING", "HIDDEN"]:
-        return False
-    if row["actual_gate_arrival"] < row["actual_runway_arrival"]:
-        return False
-    if row["actual_runway_departure"] < row["actual_gate_departure"]:
-        return False 
+    if row["actual_gate_arrival"] != "HIDDEN" and row["actual_runway_arrival"] != "HIDDEN":
+        if row["actual_gate_arrival"] < row["actual_runway_arrival"]:
+            return False
+    if row["actual_runway_departure"] != "HIDDEN" and row["actual_gate_departure"] != "HIDDEN":
+        if row["actual_runway_departure"] < row["actual_gate_departure"]:
+            return False 
     if row["arrival_airport_icao_code"] not in us_icao_codes:
         return False
     if row["departure_airport_icao_code"] not in us_icao_codes:
