@@ -2,9 +2,8 @@ import pandas as pd
 from dateutil.tz import tzutc
 from datetime import datetime
 
-import date_utilities as dut
-import test_data_utils as tdu
-
+from utilities import date_utilities as dut
+from utilities import test_data_utils as tdu
 
 class FlightDay:
     """
@@ -31,7 +30,7 @@ class FlightDay:
         if mode != "nodata":
             print "\tLoading flight_history.csv...",
             self.flight_history = \
-                pd.read_csv("../Data/" + data_set_name + \
+                pd.read_csv("../../Data/" + data_set_name + \
                 "/" + folder_name + "/" + "FlightHistory/flighthistory.csv",
                 converters = dut.get_flight_history_date_converter())
             print "done"
@@ -43,7 +42,7 @@ class FlightDay:
 
             print "\tLoading flight_history_events.csv...",
             self.flight_history_events = \
-                pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" + \
+                pd.read_csv("../../Data/" + data_set_name + "/" + folder_name + "/" + \
                  "FlightHistory/flighthistoryevents.csv",
                 converters={"date_time_recorded": conv})
             print "done"            
@@ -58,7 +57,7 @@ class FlightDay:
         if mode == "leaderboard":
             print "\tLoading test flights data set...",
             self.test_data = \
-                pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
+                pd.read_csv("../../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
                 usecols=[0])
             print "done"            
         elif mode == "training":
@@ -66,9 +65,12 @@ class FlightDay:
             codes = tdu.get_us_airport_icao_codes()
             self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
             print "done"
+        elif mode == "nodata":
+            self.test_data = pd.DataFrame(None)
+            print "\tNo flight history loaded, no test data created!"
         else:
             self.test_data = pd.DataFrame(None)
-            print "Not a valid option!"
+            print "\tNot a valid option!"
 
     def save_cutoff_times(self, filename):
         if self.mode == "leaderboard":
@@ -81,12 +83,12 @@ class FlightDay:
     def load_cutoff_times(self, filename=""):
         if self.mode == "leaderboard":
             print "\tLoading cutoff times from {}...".format("days.csv"),            
-            self.cutoff_time_list = pd.read_csv("../Data/" + self.data_set_name + "/" "days.csv",
+            self.cutoff_time_list = pd.read_csv("../../Data/" + self.data_set_name + "/" "days.csv",
                 index_col='folder_name', parse_dates=[1])
             print "done"
         elif filename != "":
             print "\tLoading cutoff times from {}...".format(filename),
-            self.cutoff_time_list = pd.read_csv(filename, index_col='folder_name', parse_dates=[1])
+            self.cutoff_time_list = pd.read_csv("models/" + filename, index_col='folder_name', parse_dates=[1])
             print "done"
         else:
             print "\tCreating new cutoff times...",

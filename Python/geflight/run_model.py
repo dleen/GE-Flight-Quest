@@ -1,9 +1,8 @@
 import pandas as pd
 import datetime
 
-import model_most_recent_update as mmru
-import flightday as fd
-import rmse
+from models import flightday as fd
+from models.utilities import rmse
 
 def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=""):
     """

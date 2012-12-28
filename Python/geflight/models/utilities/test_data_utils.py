@@ -100,5 +100,5 @@ def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
     return True
 
 def get_us_airport_icao_codes():
-    df = pd.read_csv("../Data/Reference/usairporticaocodes.txt")
+    df = pd.read_csv("../../Data/Reference/usairporticaocodes.txt")
     return set(df["icao_code"])

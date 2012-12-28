@@ -1,9 +1,9 @@
 import flightday as fd
-import date_utilities as dut
-import test_data_utils as tdu
-import row_helper_functions as rhf
+from utilities import date_utilities as dut
+from utilities import test_data_utils as tdu
+from utilities import row_helper_functions as rhf
+from utilities import rmse
 
-import rmse
 import pandas as pd
 
 class MRU:
@@ -15,7 +15,9 @@ class MRU:
 
     def run_day(self, day, pred):
         """
-        All models should have a function like this
+        All models should have a function like this.
+        This says how to run the model/return a prediction
+        for a single day.
         """
         return self.using_most_recent_updates_individual_day(day, pred)
 
@@ -77,10 +79,6 @@ class MRU:
 
         ega_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
             "gate", offset_str)
-
-        if era_est > ega_est:
-            # VV Improves score on Kaggle, worsens training set score
-            ega_est = era_est
 
         return [era_est, ega_est]
 
