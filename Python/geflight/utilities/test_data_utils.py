@@ -102,3 +102,70 @@ def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
 def get_us_airport_icao_codes():
     df = pd.read_csv("../Data/Reference/usairporticaocodes.txt")
     return set(df["icao_code"])
+
+
+
+# utilities.filter_file_based_on_cutoff_time_streaming(os.path.join(training_day_path, 
+#     "FlightHistory", "flighthistoryevents.csv"),
+#     os.path.join(utilities.get_output_subdirectory(test_day_path, "FlightHistory"), "flighthistoryevents.csv"),
+#     "date_time_recorded",
+#     utilities.parse_datetime_format3,
+#     cutoff_time)
+
+# def filter_file_based_on_cutoff_time_streaming(
+#     input_path,
+#     output_path,
+#     date_column_name,
+#     date_parser,
+#     cutoff_time,
+#     ids_to_track_column_name = None
+#     ):
+
+#     if ids_to_track_column_name is not None:
+#         ids_tracked = set()
+#     else:
+#         ids_tracked = None
+
+#     f_in = open(input_path)
+#     reader = HeaderCsvReader(f_in)
+#     f_out = open(output_path, "w")
+#     writer = csv.writer(f_out, dialect=CsvDialect())
+#     writer.writerow(reader.header)
+
+#     converters = {date_column_name: date_parser}
+
+#     i_total = 0
+#     i_keep = 0
+
+#     for row in reader:
+#         i_total += 1
+#         parse_row(converters, row)
+#         if row[date_column_name] > cutoff_time:
+#             continue
+#         if ids_to_track_column_name is not None:
+#             ids_tracked.add(row[ids_to_track_column_name])
+#         i_keep += 1
+#         row[date_column_name] = str(row[date_column_name])
+#         writer.writerow([row[col_name] for col_name in reader.header])
+
+#     print("%s, %s: %d lines remaining out of %d original lines" % \
+#         (get_day_str(cutoff_time), os.path.split(input_path)[1], i_keep, i_total))
+
+#     f_out.close()
+#     return ids_tracked
+
+
+def filter_data_based_on_cutoff_and_test_ids(test_flight_history_ids,
+    input_data_to_filter, date_column_name, cutoff_time):
+
+    df = pd.merge(left=test_flight_history_ids, right=input_data_to_filter.reset_index(),
+        on='flight_history_id', how='left', sort=False)
+
+    ind = df[df[date_column_name] > cutoff_time]
+
+    return input_data_to_filter.drop(ind['index'].values, axis=0)
+
+
+
+
+

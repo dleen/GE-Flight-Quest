@@ -40,8 +40,8 @@ def main():
 
     dir()
 
-    #mode = "training"
-    mode = "leaderboard"
+    mode = "training"
+    #mode = "leaderboard"
 
     # Run model using the most recently updated estimates of 
     # the runway arrival and the gate arrival as the predictions 
@@ -65,8 +65,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_recent_gdly, most_recent_imp, fn1, data_set_name, mode, cutoff_file)
-        #temp = run_model(most_recent_imp, most_recent_gdly, fn1, data_set_name, mode)
+        temp = run_model.run_model(most_recent, most_recent_imp, fn1, data_set_name, mode)
         print temp
 
     else:

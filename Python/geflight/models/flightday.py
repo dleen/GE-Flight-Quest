@@ -55,6 +55,8 @@ class FlightDay:
                                       self.cutoff_time.day, 
                                       tzinfo=tzutc())
 
+        self.test_data = pd.DataFrame(None)
+
         if mode == "leaderboard":
             print "\tLoading test flights data set...",
             self.test_data = \
@@ -65,6 +67,11 @@ class FlightDay:
             print "\tCreating test flight data set...",
             codes = tdu.get_us_airport_icao_codes()
             self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time, codes)
+            print "done"
+            print "\tFiltering flight history events data set...",
+            self.flight_history_events = \
+                tdu.filter_data_based_on_cutoff_and_test_ids(self.test_data,
+                    self.flight_history_events, 'date_time_recorded', self.cutoff_time)
             print "done"
         elif mode == "nodata":
             self.test_data = pd.DataFrame(None)

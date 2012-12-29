@@ -99,13 +99,9 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
                 gd = datetime.timedelta(seconds=abs(gate_delay))
                 ega_est = era_est
                 era_est = ega_est - gd
-            else:
-                ega_est = era_est
+            # else:
+            #     ega_est = era_est
 
-        if gate_delay >= 0:
-            gd = datetime.timedelta(seconds=gate_delay)
-            if ega_est < era_est + gd:
-                ega_est = era_est + gd
 
         return [era_est, ega_est]
 
