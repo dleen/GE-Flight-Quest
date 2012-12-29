@@ -4,7 +4,7 @@ import flightday as fd
 from utilities import folder_names as fn
 from utilities import date_utilities as dut
 
-from all_data_agg import using_all_data_calculations
+from all_data_agg import using_all_data_calculations as uadc
 
 import numpy as np
 import pandas as pd
@@ -34,7 +34,7 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
         Finally converts the predictions to minutes past midnight.
         """
         # This is a change from the original:
-        add_column_avg_gate_delays_by_arr_airport(day)
+        uadc.add_column_avg_gate_delays_by_arr_airport(day)
 
         flight_events = day.flight_history_id_grouping()
 
@@ -90,14 +90,17 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
 
         gate_delay = event_group["gate_delay_mins"].ix[event_group.index[0]]
 
+        # Improves score on Kaggle
         if era_est > ega_est:
             if gate_delay >= 0:
                 gd = datetime.timedelta(seconds=gate_delay)
                 ega_est = era_est + gd
-            else:
+            elif gate_delay < 0:
                 gd = datetime.timedelta(seconds=abs(gate_delay))
                 ega_est = era_est
                 era_est = ega_est - gd
+            else:
+                ega_est = era_est
 
         if gate_delay >= 0:
             gd = datetime.timedelta(seconds=gate_delay)

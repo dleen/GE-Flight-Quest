@@ -56,6 +56,6 @@ def add_column_avg_gate_delays_by_arr_airport(day):
     """
     Description
     """
-    gaggo = pd.read_csv('../output_csv/average_gate_delay_by_arrival_airport.csv')
+    gaggo = pd.read_csv('output_csv/average_gate_delay_by_arrival_airport.csv')
 
     day.flight_history = pd.merge(left=day.flight_history, right=gaggo, on='arrival_airport_icao_code', how='left', sort=False)

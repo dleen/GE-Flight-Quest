@@ -31,7 +31,7 @@ class FlightDay:
         if mode != "nodata":
             print "\tLoading flight_history.csv...",
             self.flight_history = \
-                pd.read_csv("../../Data/" + data_set_name + \
+                pd.read_csv("../Data/" + data_set_name + \
                 "/" + folder_name + "/" + "FlightHistory/flighthistory.csv",
                 converters = dut.get_flight_history_date_converter())
             print "done"
@@ -43,7 +43,7 @@ class FlightDay:
 
             print "\tLoading flight_history_events.csv...",
             self.flight_history_events = \
-                pd.read_csv("../../Data/" + data_set_name + "/" + folder_name + "/" + \
+                pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/" + \
                  "FlightHistory/flighthistoryevents.csv",
                 converters={"date_time_recorded": conv})
             print "done"            
@@ -58,7 +58,7 @@ class FlightDay:
         if mode == "leaderboard":
             print "\tLoading test flights data set...",
             self.test_data = \
-                pd.read_csv("../../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
+                pd.read_csv("../Data/" + data_set_name + "/" + folder_name + "/test_flights.csv",
                 usecols=[0])
             print "done"            
         elif mode == "training":
@@ -84,12 +84,12 @@ class FlightDay:
     def load_cutoff_times(self, filename=""):
         if self.mode == "leaderboard":
             print "\tLoading cutoff times from {}...".format("days.csv"),            
-            self.cutoff_time_list = pd.read_csv("../../Data/" + self.data_set_name + "/" "days.csv",
+            self.cutoff_time_list = pd.read_csv("../Data/" + self.data_set_name + "/" "days.csv",
                 index_col='folder_name', parse_dates=[1])
             print "done"
         elif filename != "":
             print "\tLoading cutoff times from {}...".format(filename),
-            self.cutoff_time_list = pd.read_csv("models/" + filename, index_col='folder_name', parse_dates=[1])
+            self.cutoff_time_list = pd.read_csv("input_csv/" + filename, index_col='folder_name', parse_dates=[1])
             print "done"
         else:
             print "\tCreating new cutoff times...",
