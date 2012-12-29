@@ -1,10 +1,12 @@
-from models import flightday as fd
+from geflight.models import flightday as fd
 from models import model_MRU_with_gate_delay_est as mmgd
 from models import model_MRU_with_improvement as mmwi
 from models import model_most_recent_update as mmru
 from models.utilities import folder_names as fn
 from run_model import run_model
 from all_data_agg import using_all_data_calculations as uadc
+
+import pandas as pd
 
 def main():
     """
@@ -33,9 +35,8 @@ def main():
     can be found in flight_history_events.csv
     """
 
-    #mode = "training"
-    #mode = "just_testing"
-    mode = "leaderboard"
+    mode = "training"
+    #mode = "leaderboard"
 
     # Run model using the most recently updated estimates of 
     # the runway arrival and the gate arrival as the predictions 
@@ -66,13 +67,12 @@ def main():
     else:
         print "Not a valid option!"
 
-def all_data_test():
-    test = uadc.AllTrainingData("flight_history")
+def all_data_test(day):
+    #test = uadc.AllTrainingData("flight_history")
 
-    gaggo = uadc.add_column_average_gate_delays(test)
+    #uadc.average_gate_delays_by_arrival_airport(test)
 
-    print gaggo
-    print gaggo[0:5]
+    gaggo = pd.read_csv('output_csv/average_gate_delay_by_arrival_airport.csv')
 
     mode = "training"
     fn1 = fn.folder_names_init_set()
@@ -81,6 +81,9 @@ def all_data_test():
 
     day = fd.FlightDay(fn1[0], data_set_name, mode, cutoff_file)
 
+    day.flight_history = pd.merge(left=day.flight_history, right=gaggo, on='arrival_airport_icao_code', how='left', sort=False)
+
+
 if __name__=='__main__':
-    #main()
-    all_data_test()
+    main()
+    #all_data_test()

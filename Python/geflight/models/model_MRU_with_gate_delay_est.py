@@ -4,6 +4,8 @@ import flightday as fd
 from utilities import folder_names as fn
 from utilities import date_utilities as dut
 
+from ..all_data_agg import using_all_data_calculations
+
 import numpy as np
 import pandas as pd
 import datetime
@@ -24,27 +26,6 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
         """
         return "Avg gate time by airport model"
 
-    def add_column_average_gate_delays_per_day(self, day):
-        """
-        Improve this:
-            revert to other times if actual are not available
-            clean up the return dataframe
-        """
-        gate_delay = day.flight_history[['arrival_airport_icao_code', 'actual_runway_arrival', 'actual_gate_arrival']]
-
-        gate_delay_1 = gate_delay.replace(["MISSING", "HIDDEN"], np.NaN)
-        gate_delay_1 = gate_delay_1.dropna(axis=0)
-
-        gate_delay_1['gate_delay_mins'] = gate_delay_1['actual_gate_arrival'] - gate_delay_1['actual_runway_arrival']
-        gate_delay_1 = gate_delay_1[['arrival_airport_icao_code', 'gate_delay_mins']]
-        grouped_by_arrival_airport = gate_delay_1.groupby('arrival_airport_icao_code', as_index=False)
-        gagg = grouped_by_arrival_airport['gate_delay_mins'].aggregate(self.timedelta_mean)
-
-        day.flight_history = pd.merge(left=day.flight_history, right=gagg, on='arrival_airport_icao_code', how='left', sort=False)
-
-    def timedelta_mean(self, td_list):
-        return sum(td_list, datetime.timedelta(0)) / len(td_list)
-
     def using_most_recent_updates_individual_day(self, day, pred):
         """
         Given a day of flights calculates the most recent update for runway and
@@ -52,7 +33,8 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
         dataframe. Replaces any missing values with just the value of the cutoff time.
         Finally converts the predictions to minutes past midnight.
         """
-        self.add_column_average_gate_delays_per_day(day)
+        # This is a change from the original:
+        add_column_avg_gate_delays_by_arr_airport(day)
 
         flight_events = day.flight_history_id_grouping()
 
@@ -106,15 +88,21 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
         ega_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
             "gate", offset_str)
 
-        gate_delay_mins = event_group["gate_delay_mins"].ix[event_group.index[0]]
+        gate_delay = event_group["gate_delay_mins"].ix[event_group.index[0]]
 
         if era_est > ega_est:
-            # VV Improves score on Kaggle, worsens training set score
-            ega_est = era_est + gate_delay_mins
-            #era_est = era_est + gate_delay_mins / 2
+            if gate_delay >= 0:
+                gd = datetime.timedelta(seconds=gate_delay)
+                ega_est = era_est + gd
+            else:
+                gd = datetime.timedelta(seconds=abs(gate_delay))
+                ega_est = era_est
+                era_est = ega_est - gd
 
-        if ega_est - era_est < gate_delay_mins:
-            era_est = ega_est - gate_delay_mins
+        if gate_delay >= 0:
+            gd = datetime.timedelta(seconds=gate_delay)
+            if ega_est < era_est + gd:
+                ega_est = era_est + gd
 
         return [era_est, ega_est]
 

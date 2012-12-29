@@ -27,6 +27,7 @@ class FlightDay:
         self.mode = mode
         self.cutoff_filename = cutoff_filename
 
+        print "FlightDay Initializing: {}, {} in {} mode".format(folder_name, data_set_name, mode)
         if mode != "nodata":
             print "\tLoading flight_history.csv...",
             self.flight_history = \

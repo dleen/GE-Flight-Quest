@@ -134,19 +134,27 @@ def parse_datetime_format3(datestr):
 
     Converts into UTC
     """
-    # microseconds = datestr[20:-3]
-    # if not microseconds:
-    #     microseconds=0
-    # else:
-    #     microseconds = int(microseconds) * (10**(6-len(microseconds)))
+    microseconds = datestr[20:-3]
+    if not microseconds:
+        microseconds=0
+    else:
+        microseconds = int(microseconds) * (10**(6-len(microseconds)))
    
-    # dt = datetime.datetime(int(datestr[:4]),
-    #                        int(datestr[5:7]),
-    #                        int(datestr[8:10]),
-    #                        int(datestr[11:13]),
-    #                        int(datestr[14:16]),
-    #                        int(datestr[17:19]),
-    #                        microseconds,
-    #                        tzoffset(None, int(datestr[-3:]) * 3600))
-    # dt = dt.astimezone(tzutc())
-    return datestr
+    dt = datetime.datetime(int(datestr[:4]),
+                           int(datestr[5:7]),
+                           int(datestr[8:10]),
+                           int(datestr[11:13]),
+                           int(datestr[14:16]),
+                           int(datestr[17:19]),
+                           microseconds,
+                           tzoffset(None, int(datestr[-3:]) * 3600))
+    dt = dt.astimezone(tzutc())
+    return dt
+
+def timedelta_mean(td_list):
+    s = sum(td_list, datetime.timedelta(0)) / len(td_list)
+
+    if abs(s.seconds) > 1000:
+        print "arf"
+
+    return s
