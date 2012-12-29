@@ -2,7 +2,7 @@ import pandas as pd
 import datetime
 
 from models import flightday as fd
-from models.utilities import rmse
+from utilities import rmse
 
 def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=""):
     """

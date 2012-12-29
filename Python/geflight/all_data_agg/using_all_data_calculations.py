@@ -1,5 +1,5 @@
-from models.utilities import folder_names as fn
-from models.utilities import date_utilities as dut
+from utilities import folder_names as fn
+from utilities import date_utilities as dut
 
 import pandas as pd
 import numpy as np

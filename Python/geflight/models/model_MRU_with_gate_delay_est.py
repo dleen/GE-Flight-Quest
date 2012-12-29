@@ -4,7 +4,7 @@ import flightday as fd
 from utilities import folder_names as fn
 from utilities import date_utilities as dut
 
-from ..all_data_agg import using_all_data_calculations
+from all_data_agg import using_all_data_calculations
 
 import numpy as np
 import pandas as pd

@@ -1,9 +1,9 @@
-from geflight.models import flightday as fd
+from models import flightday as fd
 from models import model_MRU_with_gate_delay_est as mmgd
 from models import model_MRU_with_improvement as mmwi
 from models import model_most_recent_update as mmru
-from models.utilities import folder_names as fn
-from run_model import run_model
+from utilities import folder_names as fn
+from models import run_model
 from all_data_agg import using_all_data_calculations as uadc
 
 import pandas as pd
@@ -35,6 +35,8 @@ def main():
     can be found in flight_history_events.csv
     """
 
+    dir()
+
     mode = "training"
     #mode = "leaderboard"
 
@@ -51,7 +53,7 @@ def main():
         fn1 = fn.folder_names_test_set()
         data_set_name = "PublicLeaderboardSet"
 
-        run_model(most_recent_imp, None, fn1, data_set_name, mode)
+        run_model.run_model(most_recent_imp, None, fn1, data_set_name, mode)
 
     elif mode == "training":
 
@@ -60,7 +62,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model(most_recent, most_recent_imp, fn1, data_set_name, mode, cutoff_file)
+        temp = run_model.run_model(most_recent, most_recent_imp, fn1, data_set_name, mode, cutoff_file)
         #temp = run_model(most_recent_imp, most_recent_gdly, fn1, data_set_name, mode)
         print temp
 
