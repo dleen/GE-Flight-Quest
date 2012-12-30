@@ -65,7 +65,7 @@ def get_flight_history_date_converter():
     Dict of which columns, and the function to apply to convert 
     to datetimes when importing flight_history csv file
     """
-    return {x : to_utc_date for x in get_flight_history_date_columns()}
+    return {x : to_utc_date_flight_history for x in get_flight_history_date_columns()}
 
 def get_flight_history_date_columns():
     """
@@ -85,7 +85,7 @@ def get_flight_history_date_columns():
     ]
     return flight_history_date_columns
 
-def to_utc_date(datestr):
+def to_utc_date_flight_history(datestr):
     """
     Convert strings imported from csv to datetimes
     dealing with non-date strings
@@ -94,7 +94,7 @@ def to_utc_date(datestr):
         return "MISSING"
     if datestr == "HIDDEN":
         return "HIDDEN"
-    return parse_datetime_format1(datestr).astimezone(tzutc())
+    return parse_datetime_format1(datestr)
 
 def parse_datetime_format1(datestr):
     """
@@ -151,10 +151,56 @@ def parse_datetime_format3(datestr):
     dt = dt.astimezone(tzutc())
     return dt
 
-def timedelta_mean(td_list):
-    s = sum(td_list, datetime.timedelta(0)) / len(td_list)
+#
+# ASDI flight plan converters etc
+#
 
-    if abs(s.seconds) > 1000:
-        print "arf"
+def get_asdi_flight_plan_date_converter():
+    """ 
+    Dict of which columns, and the function to apply to convert 
+    to datetimes when importing flight_history csv file
+    """
+    return {x : to_utc_date_asdi_plan for x in get_asdi_flight_plan_date_columns()}
 
-    return s
+def get_asdi_flight_plan_date_columns():
+    """
+    List of the columns which should be converted to datetimes
+    """
+    asdi_flight_plan_date_columns = [
+        "updatetimeutc",
+        "originaldepartureutc",
+        "estimateddepartureutc",
+        "originalarrivalutc",
+        "estimatedarrivalutc",
+    ]
+    return asdi_flight_plan_date_columns
+
+def to_utc_date_asdi_plan(datestr):
+    """
+    Convert strings imported from csv to datetimes
+    dealing with non-date strings
+    """
+    if not datestr or datestr == "MISSING":
+        return "MISSING"
+    if datestr == "HIDDEN":
+        return "HIDDEN"
+    return parse_datetime_format2(datestr)
+
+def parse_datetime_format2(datestr):
+    """
+    Doing this manually for efficiency
+
+    Format: 2012-11-13 02:55:32
+    Year-Month-Day Hour:Minute:Second
+
+    Assumed to be UTC
+    """
+    dt = datetime.datetime(int(datestr[:4]),
+                           int(datestr[5:7]),
+                           int(datestr[8:10]),
+                           int(datestr[11:13]),
+                           int(datestr[14:16]),
+                           int(datestr[17:19]),
+                           0,
+                           tzutc())
+    return dt

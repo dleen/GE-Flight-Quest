@@ -3,6 +3,8 @@ import flightday as fd
 
 from utilities import folder_names as fn
 from utilities import date_utilities as dut
+from utilities import sanity_check as sc
+
 
 from all_data_agg import using_all_data_calculations as uadc
 
@@ -36,7 +38,7 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
         # This is a change from the original:
         uadc.add_column_avg_gate_delays_by_arr_airport(day)
 
-        flight_events = day.flight_history_id_grouping()
+        flight_events = self.flight_history_id_grouping(day)
 
         fid = []; era = []; ega = []
 
@@ -63,6 +65,8 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
         if day.mode == "training": 
             pred.test_data = \
                 dut.convert_predictions_from_datetimes_to_minutes(pred.test_data, day.midnight_time)
+
+        sc.sanity_check(pred, day.mode)
 
         return pred
 
@@ -99,21 +103,61 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
                 gd = datetime.timedelta(seconds=abs(gate_delay))
                 ega_est = era_est
                 era_est = ega_est - gd
-            # else:
-            #     ega_est = era_est
-
+            else:
+                ega_est = era_est
 
         return [era_est, ega_est]
 
-if __name__=='__main__':
-    mode = "training"
-    fn = fn.folder_names_init_set()
-    data_set_name = "InitialTrainingSet_rev1"
-    cutoff_file = "cutoff_time_list_my_cutoff.csv"
+class MRU_with_gate_delay_upd(MRU_with_gate_delay_est):
+    """
+    This class allows us to make slight changes to our model by "overloading"
+    the functions we want to make changes to.
+    """
+    def __repr__(self):
+        """
+        This is a descriptive name for the model for use in strings
+        """
+        return "Avg gate time by airport UPD"
 
-    most_recent_upd = MRU_with_gate_delay_est()
+    def find_most_recent_event_update(self, event_group):
+        """
+        Takes in a group of events corresponding to one flight history id.
+        Parses the events looking for estimated runway arrival or gate updates
+        and returns the most recent update for each.
+        """
+        event_group = event_group.sort_index(by='date_time_recorded', ascending=False)
 
-    day = fd.FlightDay(fn[0], data_set_name, mode, cutoff_file)
+        event_list = event_group['data_updated']
 
-    most_recent_upd.average_gate_times_per_day(day)
+        offset = event_group["arrival_airport_timezone_offset"].ix[event_group.index[0]]
+        if offset>0:
+            offset_str = "+" + str(offset)
+        else:
+            offset_str = str(offset)
 
+        era_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
+            "runway", offset_str)
+
+        ega_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
+            "gate", offset_str)
+
+        gate_delay = event_group["gate_delay_mins"].ix[event_group.index[0]]
+
+        # Improves score on Kaggle
+        if era_est > ega_est:
+            if gate_delay >= 0:
+                gd = datetime.timedelta(seconds=gate_delay)
+                ega_est = era_est + gd
+            elif gate_delay < 0:
+                gd = datetime.timedelta(seconds=abs(gate_delay))
+                ega_est = era_est
+                era_est = ega_est - gd
+            else:
+                ega_est = era_est
+
+        if gate_delay >= 0:
+            gd = datetime.timedelta(seconds=gate_delay)
+            if ega_est < era_est + gd:
+                ega_est = era_est + gd
+
+        return [era_est, ega_est]

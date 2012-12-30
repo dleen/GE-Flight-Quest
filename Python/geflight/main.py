@@ -48,6 +48,7 @@ def main():
     # for the actual arrival times:
 
     most_recent_gdly = mmgd.MRU_with_gate_delay_est()
+    most_recent_gdly_upd = mmgd.MRU_with_gate_delay_upd()
     most_recent_imp  = mmwi.MRU_with_improvement()
     most_recent      = mmru.MRU()
 
@@ -56,7 +57,7 @@ def main():
         fn1 = fn.folder_names_test_set()
         data_set_name = "PublicLeaderboardSet"
 
-        run_model.run_model(most_recent_gdly, None, fn1, data_set_name, mode)
+        run_model.run_model(most_recent_gdly_upd, None, fn1, data_set_name, mode)
 
     elif mode == "training":
 
@@ -65,7 +66,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_recent, most_recent_imp, fn1, data_set_name, mode)
+        temp = run_model.run_model(most_recent, None, fn1, data_set_name, mode, cutoff_file)
         print temp
 
     else:
