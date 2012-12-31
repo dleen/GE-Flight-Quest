@@ -6,7 +6,21 @@ from utilities import rmse
 from utilities import column_functions as cf
 from utilities import sanity_check as sc
 
+from transforming import flight_history_events as fhe
+
 import pandas as pd
+
+#
+# Possible improvement!
+#
+# Instead of doing a join first then applying functions,
+# first group each file by flight id, apply functions to each 
+# group and then join? Will this cause some data to be inaccessible?
+# Maybe just have the function applied to each group operate as a 
+# data transformation type function rather than doing some fancy
+# prediction calculation.
+#
+
 
 class MRU:
     """

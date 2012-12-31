@@ -47,7 +47,7 @@ def parse_fhe_events(event, e_type):
     """
     if type(event) != str:
         return None
-    if e_type not in event:
+    if e_type + "-" not in event:
         return None
     # VVV (Below) Interesting piece of information --
     # is EGA calculated just from distance and speed?
@@ -60,5 +60,5 @@ def parse_fhe_events(event, e_type):
     if est:
         return est.group('dt')
     else:
-        print event
+        print "Looking for: {} in {}".format(e_type, event)
         return None
