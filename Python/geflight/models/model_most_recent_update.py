@@ -6,8 +6,6 @@ from utilities import rmse
 from utilities import column_functions as cf
 from utilities import sanity_check as sc
 
-from transforming import flight_history_events as fhe
-
 import pandas as pd
 
 #

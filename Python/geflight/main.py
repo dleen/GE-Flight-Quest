@@ -6,6 +6,8 @@ from utilities import folder_names as fn
 from models import run_model
 from all_data_agg import using_all_data_calculations as uadc
 
+from transforming import fh_data_for_modeling as fhdfm
+
 def main():
     """
     This is not right any more
@@ -67,10 +69,12 @@ def main():
 
     else:
         print "Not a valid option!"
-
-def all_data_test():
-    pass
+        
 
 if __name__=='__main__':
-    main()
-    #all_data_test()
+    #main()
+    
+    fhdfm.transform_fhe()
+
+
+
