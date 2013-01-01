@@ -5,6 +5,8 @@ from dateutil.parser import parse
 
 import numpy as np
 
+import pandas as pd
+
 #
 # Convert from date times to minutes after midnight of the
 # day that the flight departed
@@ -25,6 +27,8 @@ def convert_predictions_from_datetimes_to_minutes(df_predictions,
 
 def minutes_difference(datetime1, datetime2):
     """ Returns the minutes difference between two datetimes """
+    if pd.isnull(datetime1):
+        return np.nan
     diff = datetime1.astimezone(tzutc()) - datetime2.astimezone(tzutc())
     return diff.days*24*60+diff.seconds/60
 
@@ -99,10 +103,8 @@ def to_utc_date_flight_history(datestr):
     Convert strings imported from csv to datetimes
     dealing with non-date strings
     """
-    if not datestr or datestr == "MISSING":
-        return "MISSING"
-    if datestr == "HIDDEN":
-        return "HIDDEN"
+    if not datestr or datestr in ["MISSING", "HIDDEN"]:
+        return np.nan
     return parse_datetime_format1(datestr)
 
 def parse_datetime_format1(datestr):

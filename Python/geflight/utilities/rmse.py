@@ -34,6 +34,7 @@ def rmse_final(data):
 def calculate_rmse_score(fin, tst):
     if len(fin) != len(tst):
         print "Error with the lengths of predicted and test data!"
+        print "Test length: {}, Pred length: {}".format(len(tst), len(fin))
     
     combined_on_id = pd.merge(left=tst, right=fin,
         on='flight_history_id', suffixes=('_predicted', '_actual'),  sort=False)

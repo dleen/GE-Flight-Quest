@@ -7,10 +7,6 @@ def unnecessary_columns():
 	'scheduled_air_time',
 	'creator_code',
 	'flight_number',
-	'actual_runway_arrival_x',
-	'actual_runway_arrival_y',
-	'actual_gate_arrival_x',
-	'actual_gate_arrival_y',
 	'departure_airport_code',
 	'arrival_airport_code',
 	'airline_code'

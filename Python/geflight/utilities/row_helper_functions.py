@@ -1,5 +1,7 @@
 import re
 
+import pandas as pd
+
 def get_scheduled_arrival(row, arrival_type):
     """
     Try each of the columns containing arrival information in order
@@ -7,11 +9,11 @@ def get_scheduled_arrival(row, arrival_type):
     use the opposite type information before moving onto the next column of 
     data. Return None is all data is missing
     """
-    if row["scheduled_%s_arrival" % arrival_type] not in ["MISSING", "HIDDEN"]:
+    if pd.notnull(row["scheduled_%s_arrival" % arrival_type]):
         return row["scheduled_%s_arrival" % arrival_type]
-    if row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)] not in ["MISSING", "HIDDEN"]:
+    if pd.notnull(row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)]):
         return row["scheduled_%s_arrival" % get_other_arrival_type(arrival_type)]
-    if row["published_arrival"] not in ["MISSING", "HIDDEN"]:
+    if pd.notnull(row["published_arrival"]):
         return row["published_arrival"]
     return get_scheduled_departure(row, arrival_type)
 
@@ -22,11 +24,11 @@ def get_scheduled_departure(row, arrival_type):
     use the opposite type information before moving onto the next column of 
     data. Return None is all data is missing
     """
-    if row["scheduled_%s_departure" % arrival_type] not in ["MISSING", "HIDDEN"]:
+    if pd.notnull(row["scheduled_%s_departure" % arrival_type]):
         return row["scheduled_%s_departure" % arrival_type]
-    if row["scheduled_%s_departure" % get_other_arrival_type(arrival_type)] not in ["MISSING", "HIDDEN"]:
+    if pd.notnull(row["scheduled_%s_departure" % get_other_arrival_type(arrival_type)]):
         return row["scheduled_%s_departure" % get_other_arrival_type(arrival_type)]
-    if row["published_departure"] not in ["MISSING", "HIDDEN"]:
+    if pd.notnull(row["published_departure"]):
         return row["published_departure"]
     return None 
 

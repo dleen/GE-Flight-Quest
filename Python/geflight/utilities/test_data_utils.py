@@ -59,13 +59,13 @@ def get_departure_time(row):
     """
     Try to select a valid departure time from the available ones
     """
-    if row["published_departure"] != "MISSING":
+    if pd.notnull(row["published_departure"]):
         return row["published_departure"]
-    if row["scheduled_gate_departure"] != "MISSING":
+    if pd.notnull(row["scheduled_gate_departure"]):
         return row["scheduled_gate_departure"]
-    if row["scheduled_runway_departure"] != "MISSING":
+    if pd.notnull(row["scheduled_runway_departure"]):
         return row["scheduled_runway_departure"]
-    return "MISSING"
+    return pd.nan
 
 def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
     """
@@ -73,26 +73,28 @@ def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
     meets the other requirements to be a test row (continental US flight)
     """
     departure_time = get_departure_time(row)
+    if pd.isnull(departure_time):
+        return False
     if departure_time > cutoff_time:
         return False
-    if row["actual_gate_departure"] == "MISSING":
+    if pd.isnull(row["actual_gate_departure"]):
         return False
-    if row["actual_runway_departure"] == "MISSING":
+    if pd.isnull(row["actual_runway_departure"]):
         return False
-    if row["actual_runway_departure"] != "HIDDEN":
+    if pd.notnull(row["actual_runway_departure"]):
         if row["actual_runway_departure"] > cutoff_time:
             return False
-    if row["actual_runway_arrival"] == "MISSING":
+    if pd.isnull(row["actual_runway_arrival"]):
         return False
-    if row["actual_runway_arrival"] != "HIDDEN":
+    if pd.notnull(row["actual_runway_arrival"]):
         if row["actual_runway_arrival"] <= cutoff_time:
             return False
-    if row["actual_gate_arrival"] == "MISSING":
+    if pd.isnull(row["actual_gate_arrival"]):
         return False
-    if row["actual_gate_arrival"] != "HIDDEN" and row["actual_runway_arrival"] != "HIDDEN":
+    if pd.notnull(row["actual_gate_arrival"]) and pd.notnull(row["actual_runway_arrival"]):
         if row["actual_gate_arrival"] < row["actual_runway_arrival"]:
             return False
-    if row["actual_runway_departure"] != "HIDDEN" and row["actual_gate_departure"] != "HIDDEN":
+    if pd.notnull(row["actual_runway_departure"]) and pd.notnull(row["actual_gate_departure"]):
         if row["actual_runway_departure"] < row["actual_gate_departure"]:
             return False 
     if row["arrival_airport_icao_code"] not in us_icao_codes:
@@ -103,6 +105,7 @@ def flight_history_row_in_test_set(row, cutoff_time, us_icao_codes):
 
 def get_us_airport_icao_codes():
     df = pd.read_csv("../Data/Reference/usairporticaocodes.txt")
+
     return set(df["icao_code"])
 
 def filter_data_based_on_cutoff_and_test_ids(test_flight_history_ids,
@@ -116,6 +119,3 @@ def filter_data_based_on_cutoff_and_test_ids(test_flight_history_ids,
     ind = df[df[date_column_name] > cutoff_time]
 
     return input_data_to_filter.drop(ind['index'].values, axis=0)
-
-
-

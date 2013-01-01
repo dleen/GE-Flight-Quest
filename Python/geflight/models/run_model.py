@@ -2,6 +2,8 @@ import pandas as pd
 import datetime
 
 from models import flightday as fd
+from models import extended_flightday as efd
+
 from utilities import rmse
 
 def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=""):
@@ -10,7 +12,8 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
     csv file in the python directory.
     """
     fin_A = fd.FlightPredictions()
-    fin_B = fd.FlightPredictions()
+    if model_B != None:
+        fin_B = fd.FlightPredictions()
 
     print "Using mode: {}".format(mode)
     print "Using data from {}".format(data_set_name)
@@ -21,7 +24,7 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
         else:
             print "Running models '{}', '{}' on day {} (day {} of {}):".format(model_A, model_B, d, i + 1, len(days_list))
 
-        day = fd.FlightDay(d, data_set_name, mode, cutoff_filename)
+        day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_filename)
 
         fin_A = return_predictions(model_A, day, fin_A)
 
@@ -33,14 +36,14 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
 
     print "All days in {} are done!".format(data_set_name)
 
-    if mode == "leaderboard":
+    if "leaderboard" in mode:
 
         fin_A.flight_predictions.to_csv('test.csv', index=False)
         print "Predictions written to csv file in Python folder."
         if model_B != None:
             print "Warning: we have disregarded the output of '{}'!".format(model_B)
 
-    elif mode == "training":
+    elif "training" in mode:
 
         score_A = rmse.calculate_rmse_score(fin_A.flight_predictions, fin_A.test_data)
 

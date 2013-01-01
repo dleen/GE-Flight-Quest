@@ -86,7 +86,7 @@ class MRU:
 
         pred.test_data = day.test_data.copy()
 
-        if day.mode == "training": 
+        if "training" in day.mode: 
             pred.test_data = \
                 dut.convert_predictions_from_datetimes_to_minutes(pred.test_data, day.midnight_time)
 

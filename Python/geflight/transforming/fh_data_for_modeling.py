@@ -1,9 +1,14 @@
 from transforming import flight_history_events as fhe
-from utilities import date_utilities as dut
-from models import flightday as fd
+from transforming import tf_util as tfu
+
+from models import extended_flightday as efd
+
 from utilities import folder_names as fn
+from utilities import date_utilities as dut
+
 
 import pandas as pd
+
 
 #
 # Idea: parse everything in fhe.csv once without cutoff
@@ -18,71 +23,72 @@ def transform_fhe():
     data_set_name = "InitialTrainingSet_rev1"
     cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
+    day = efd.ExtendedFlightDay(fn1[0], data_set_name, mode, cutoff_file)
+
+    print len(day.test_data)
+
+    temp = day.flight_history.ix[day.flight_history['flight_history_id']  day.test_data['flight_history_id']]
+
+    print len(temp)
+
+
     for d in fn1:
-        mode = "training"
-        day = fd.FlightDay(d, data_set_name, mode, cutoff_file)
+        day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
         print "Running day: {}".format(d)  
-        create_data(day, "test_data")
+        create_data(day)
 
-def offset_func(offset):
-    if offset>0:
-        offset_str = "+" + str(offset)
-        return offset_str
-    else:
-        offset_str = str(offset)
-        return offset_str
 
-def create_data(day, data):
+def create_data(day):
 
     day.flight_history['departure_airport_timezone_offset'] = \
-        day.flight_history['departure_airport_timezone_offset'].apply(offset_func)
+        day.flight_history['departure_airport_timezone_offset'].apply(tfu.offset_func)
 
     day.flight_history['arrival_airport_timezone_offset'] = \
-        day.flight_history['arrival_airport_timezone_offset'].apply(offset_func)
+        day.flight_history['arrival_airport_timezone_offset'].apply(tfu.offset_func)
 
     grouped = day.flight_history_events.groupby('flight_history_id')
 
-    test = grouped.apply(fhe.reduce_fhe_group_to_one_row)
-    test = test.reset_index()
+    reduced_fhe = grouped.apply(fhe.reduce_fhe_group_to_one_row)
+    reduced_fhe = reduced_fhe.reset_index()
 
-    for j in ["test_data", "all"]:
+    print "\tCreating file: all"
 
-        print "\tCreating file: {}".format(j)
+    joined = pd.DataFrame(None)
 
-        joined = pd.DataFrame(None)
+    joined = pd.merge(left=day.flight_history, right=reduced_fhe, on='flight_history_id', how='left', sort=False)
 
-        if j == "test_data":
-            joined = pd.merge(left=day.test_data, right=day.flight_history, on='flight_history_id', how='left', sort=False)
-            joined = pd.merge(left=joined, right=test, on='flight_history_id', how='left', sort=False)
-        elif j == "all":
-            joined = pd.merge(left=day.flight_history, right=test, on='flight_history_id', how='left', sort=False)
+    days_to_parse_arr = ['AGA_most_recent','ARA_most_recent','EGA_most_recent',
+    'ERA_most_recent']
 
-        days_to_parse_arr = ['AGA_most_recent','ARA_most_recent','EGA_most_recent',
-        'ERA_most_recent']
+    days_to_parse_dep = ['AGD_most_recent','ARD_most_recent']
 
-        days_to_parse_dep = ['AGD_most_recent','ARD_most_recent']
+    days_to_parse = ['AGA_most_recent','ARA_most_recent','EGA_most_recent',
+    'ERA_most_recent','AGD_most_recent','ARD_most_recent']
 
-        days_to_parse = ['AGA_most_recent','ARA_most_recent','EGA_most_recent',
-        'ERA_most_recent','AGD_most_recent','ARD_most_recent']
+    for d in days_to_parse_arr:
+        joined[d] = joined[d] + joined['arrival_airport_timezone_offset']
 
-        for d in days_to_parse_arr:
-            joined[d] = joined[d] + joined['arrival_airport_timezone_offset']
+    for d in days_to_parse_dep:
+        joined[d] = joined[d] + joined['departure_airport_timezone_offset']
 
-        for d in days_to_parse_dep:
-            joined[d] = joined[d] + joined['departure_airport_timezone_offset']
+    for d in days_to_parse:
+        joined[d] = joined[d].apply(dut.parse_to_utc)
 
-        for d in days_to_parse:
-            joined[d] = joined[d].fillna(value="MISSING")
-            joined[d] = joined[d].apply(dut.parse_to_utc_w_missing)
+    joined['ARA_minutes_after_midnight'] = \
+        joined['ARA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+    joined['AGA_minutes_after_midnight'] = \
+        joined['AGA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
 
-        joined['ARA_minutes_after_cutoff'] = \
-            joined['ARA_most_recent'].apply(lambda x: dut.minutes_difference_w_missing(x,day.midnight_time))
-        joined['AGA_minutes_after_cutoff'] = \
-            joined['AGA_most_recent'].apply(lambda x: dut.minutes_difference_w_missing(x,day.midnight_time))
+    joined['actual_runway_minutes_after_midnight'] = \
+        joined['actual_runway_arrival'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+    joined['actual_gate_minutes_after_midnight'] = \
+        joined['actual_gate_arrival'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
 
-        joined['ERA_minutes_after_cutoff'] = \
-            joined['ERA_most_recent'].apply(lambda x: dut.minutes_difference_w_missing(x,day.midnight_time))
-        joined['EGA_minutes_after_cutoff'] = \
-            joined['EGA_most_recent'].apply(lambda x: dut.minutes_difference_w_missing(x,day.midnight_time))
+    joined['ERA_minutes_after_midnight'] = \
+        joined['ERA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+    joined['EGA_minutes_after_midnight'] = \
+        joined['EGA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
 
-        joined.to_csv('parsed_fhe_' + day.folder_name + '_' + j + '_filtered.csv', index=False)
+    joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv', index=False)
+
+    joined_test = joined[joined['flight_history_id'] == day.test_data['flight_history_id']]

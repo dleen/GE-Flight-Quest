@@ -1,10 +1,13 @@
 from models import flightday as fd
+
 from models import model_MRU_with_gate_delay_est as mmgd
 from models import model_MRU_with_improvement as mmwi
 from models import model_most_recent_update as mmru
+
+from models import model_Using_New_Data_Format as mundf
+
 from utilities import folder_names as fn
 from models import run_model
-from all_data_agg import using_all_data_calculations as uadc
 
 from transforming import fh_data_for_modeling as fhdfm
 
@@ -38,7 +41,7 @@ def main():
     can be found in flight_history_events.csv
     """
 
-    mode = "training"
+    modes = ["training"]
     #mode = "leaderboard"
 
     # Run model using the most recently updated estimates of 
@@ -50,31 +53,48 @@ def main():
     most_recent_imp  = mmwi.MRU_with_improvement()
     most_recent      = mmru.MRU()
 
-    if mode == "leaderboard":
+    if "leaderboard" in modes:
 
         fn1 = fn.folder_names_test_set()
         data_set_name = "PublicLeaderboardSet"
 
-        run_model.run_model(most_recent_gdly_upd, None, fn1, data_set_name, mode)
+        run_model.run_model(most_recent, None, fn1, data_set_name, modes)
 
-    elif mode == "training":
+    elif "training" in modes:
 
         fn1 = fn.folder_names_init_set()
         data_set_name = "InitialTrainingSet_rev1"
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_recent_gdly_upd, None, fn1, data_set_name, mode, cutoff_file)
+        temp = run_model.run_model(most_recent, None, fn1, data_set_name, modes, cutoff_file)
         print temp
 
     else:
         print "Not a valid option!"
         
 
+def testo():
+    most_new_data = mundf.Using_New_Data_Format()
+
+    mode = "nofiltering"
+
+    fn1 = fn.folder_names_init_set()
+    data_set_name = "InitialTrainingSet_rev1"
+
+    cutoff_file = "cutoff_time_list_my_cutoff.csv"
+
+    temp = run_model.run_model(most_new_data, None, fn1, data_set_name, mode, cutoff_file)
+
+    print temp
+
+
 if __name__=='__main__':
     #main()
     
     fhdfm.transform_fhe()
+
+    #testo()
 
 
 
