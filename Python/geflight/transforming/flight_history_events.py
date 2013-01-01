@@ -1,17 +1,12 @@
 import pandas as pd
 import re
 
-from utilities import row_helper_functions as rhf
-
 def parse_flight_history_events_day(day):
-    test_group = day.flight_history_events.groupby('flight_history_id')
-    test = test_group.apply(lambda x: fhe.reduce_fhe_group_to_one_row(x))
+    grouped = day.flight_history_events.groupby('flight_history_id')
+    test = grouped.apply(fhe.reduce_fhe_group_to_one_row)
 
 def reduce_fhe_group_to_one_row(event_group):
 
-    #print event_group
-
-    global fhid
     fhid = event_group['flight_history_id'].ix[event_group.index[0]]
 
     event_group = event_group.sort_index(by='date_time_recorded', ascending=False)
@@ -53,7 +48,7 @@ def reduce_fhe_group_to_one_row(event_group):
     'arrival_terminal' : arr_term['data_updated'],
     'departure_terminal' : dep_term['data_updated'],
      })
-     
+
     return d
 
 def was_time_adjusted(events):
@@ -260,7 +255,7 @@ def parse_fhe_gate(event, g_type):
             print "Parsing gate: {} from {}".format(gate.group('gt'), event)
         return gate.group('gt')
     else:
-        print "Looking for: {} in {} fhid: {}".format(g_type, event, fhid)
+        print "Looking for: {} in {}".format(g_type, event)
         return None
 
 def parse_fhe_terminal(event, term_type):

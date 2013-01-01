@@ -42,7 +42,7 @@ class FlightDay:
         print "FlightDay Initializing: {}, {} in {} mode".format(self.folder_name, self.data_set_name, self.mode)
 
         if self.mode != "nodata":
-            
+
             print "\tLoading flight_history.csv...",
             self.flight_history = \
                 pd.read_csv("../Data/" + self.data_set_name + \
@@ -81,6 +81,12 @@ class FlightDay:
             self.flight_history_events = \
                 tdu.filter_data_based_on_cutoff_and_test_ids(self.test_data,
                     self.flight_history_events, 'date_time_recorded', self.cutoff_time)
+            print "done"
+
+        elif self.mode == "nofiltering":
+
+            print "\tCreating test flight data set...",
+            self.test_data = tdu.select_valid_rows(self.flight_history, self.cutoff_time)
             print "done"
 
         elif self.mode == "nodata":

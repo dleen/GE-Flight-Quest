@@ -3,6 +3,8 @@ import datetime
 from dateutil.tz import tzoffset, tzutc
 from dateutil.parser import parse
 
+import numpy as np
+
 #
 # Convert from date times to minutes after midnight of the
 # day that the flight departed
@@ -23,6 +25,13 @@ def convert_predictions_from_datetimes_to_minutes(df_predictions,
 
 def minutes_difference(datetime1, datetime2):
     """ Returns the minutes difference between two datetimes """
+    diff = datetime1.astimezone(tzutc()) - datetime2.astimezone(tzutc())
+    return diff.days*24*60+diff.seconds/60
+
+def minutes_difference_w_missing(datetime1, datetime2):
+    """ Returns the minutes difference between two datetimes """
+    if datetime1 == "MISSING":
+        return "MISSING"
     diff = datetime1.astimezone(tzutc()) - datetime2.astimezone(tzutc())
     return diff.days*24*60+diff.seconds/60
 
@@ -117,6 +126,16 @@ def parse_datetime_format1(datestr):
     return dt
 
 def parse_to_utc(datestr):
+    if type(datestr) == datetime.datetime:
+        return datestr.astimezone(tzutc())
+    elif type(datestr) == str:
+        return parse(datestr).astimezone(tzutc())
+    else:
+        return datestr
+
+def parse_to_utc_w_missing(datestr):
+    if datestr in ["MISSING", "HIDDEN"]:
+        return "MISSING"
     if type(datestr) == datetime.datetime:
         return datestr.astimezone(tzutc())
     elif type(datestr) == str:
