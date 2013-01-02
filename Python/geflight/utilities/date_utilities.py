@@ -45,6 +45,9 @@ def parse_datetime_format6(datestr):
 
     Converts into UTC
     """
+    if pd.isnull(datestr):
+        return np.nan
+
     microseconds = datestr[20:-6]
     if not microseconds:
         microseconds=0
@@ -111,6 +114,8 @@ def parse_datetime_format1(datestr):
 
     Converts into UTC
     """
+    if pd.isnull(datestr):
+        return np.nan
     dt = datetime.datetime(int(datestr[:4]),
                            int(datestr[5:7]),
                            int(datestr[8:10]),
@@ -144,6 +149,8 @@ def parse_datetime_format3(datestr):
 
     Converts into UTC
     """
+    if pd.isnull(datestr):
+        return np.nan
     microseconds = datestr[20:-3]
     if not microseconds:
         microseconds=0
@@ -205,6 +212,8 @@ def parse_datetime_format2(datestr):
 
     Assumed to be UTC
     """
+    if pd.isnull(datestr):
+        return np.nan
     dt = datetime.datetime(int(datestr[:4]),
                            int(datestr[5:7]),
                            int(datestr[8:10]),

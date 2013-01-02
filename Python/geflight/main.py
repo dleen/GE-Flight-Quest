@@ -11,7 +11,9 @@ from models import run_model
 
 from transforming import fh_data_for_modeling as fhdfm
 
-from all_data_agg import group_all_data as gad
+from uses_all_data import group_all_data as gad
+
+from learning import random_forest_feature_importance as rffi
 
 def main():
     """
@@ -93,15 +95,20 @@ def testing_saved_data_model():
 def alld():
     gad.clean_all_parsed_fhe()
 
+def lurn():
+    rffi.forest()
+
 
 if __name__=='__main__':
     # main()
     
-    # fhdfm.transform_fhe()
+    fhdfm.transform_fhe()
 
     #testo()
 
-    alld()
+    # alld()
+
+    # lurn()
 
 
 

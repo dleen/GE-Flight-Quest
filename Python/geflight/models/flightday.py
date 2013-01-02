@@ -46,7 +46,7 @@ class FlightDay:
         self.flight_history = \
             pd.read_csv("../Data/" + self.data_set_name + \
             "/" + self.folder_name + "/" + "FlightHistory/flighthistory.csv",
-            na_values=["MISSING", "HIDDEN"], keep_default_na=True,
+            na_values=["MISSING", "HIDDEN", ""], keep_default_na=True,
             converters = dut.get_flight_history_date_converter())
         print "done"
 

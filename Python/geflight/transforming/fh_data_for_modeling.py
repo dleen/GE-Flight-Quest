@@ -8,6 +8,7 @@ from utilities import date_utilities as dut
 
 
 import pandas as pd
+import numpy as np
 
 
 #
@@ -48,6 +49,8 @@ def create_data(day):
 
     joined = pd.merge(left=day.flight_history, right=reduced_fhe, on='flight_history_id', how='left', sort=False)
 
+    joined = joined.replace("", np.nan)
+
     days_to_parse_arr = ['AGA_most_recent','ARA_most_recent','EGA_most_recent',
     'ERA_most_recent']
 
@@ -80,9 +83,11 @@ def create_data(day):
     joined['EGA_minutes_after_midnight'] = \
         joined['EGA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
 
-    joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv', index=False)
+    joined = joined.replace("", np.nan)
+
+    joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv', index=False, na_rep="MISSING")
 
     joined_test = pd.merge(left=day.test_data[['flight_history_id']], right=joined,
         on='flight_history_id', how='left', sort=False)
 
-    joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered.csv', index=False)
+    joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered.csv', index=False, na_rep="MISSING")

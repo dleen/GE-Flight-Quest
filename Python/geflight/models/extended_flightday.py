@@ -41,7 +41,7 @@ class ExtendedFlightDay(fd.FlightDay):
             self.flight_history_events = \
             pd.read_csv("../Data/" + self.data_set_name + "/" + self.folder_name + "/" + \
                  "FlightHistory/flighthistoryevents.csv",
-                 na_values=["MISSING", "HIDDEN"], keep_default_na=True,
+                 na_values=["MISSING", "HIDDEN", ""], keep_default_na=True,
                  converters={"date_time_recorded": conv})
             print "done"
 
