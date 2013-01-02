@@ -32,13 +32,6 @@ def minutes_difference(datetime1, datetime2):
     diff = datetime1.astimezone(tzutc()) - datetime2.astimezone(tzutc())
     return diff.days*24*60+diff.seconds/60
 
-def minutes_difference_w_missing(datetime1, datetime2):
-    """ Returns the minutes difference between two datetimes """
-    if datetime1 == "MISSING":
-        return "MISSING"
-    diff = datetime1.astimezone(tzutc()) - datetime2.astimezone(tzutc())
-    return diff.days*24*60+diff.seconds/60
-
 #
 # Parse date times in flight_history_events.csv
 #
@@ -103,7 +96,9 @@ def to_utc_date_flight_history(datestr):
     Convert strings imported from csv to datetimes
     dealing with non-date strings
     """
-    if not datestr or datestr in ["MISSING", "HIDDEN"]:
+    if pd.isnull(datestr):
+        return np.nan
+    if not datestr or datestr in ["MISSING", "HIDDEN", ""]:
         return np.nan
     return parse_datetime_format1(datestr)
 
@@ -128,22 +123,16 @@ def parse_datetime_format1(datestr):
     return dt
 
 def parse_to_utc(datestr):
+    if pd.isnull(datestr):
+        return np.nan
+    if datestr in ["MISSING","HIDDEN",""]:
+        return np.nan
     if type(datestr) == datetime.datetime:
         return datestr.astimezone(tzutc())
     elif type(datestr) == str:
         return parse(datestr).astimezone(tzutc())
     else:
-        return datestr
-
-def parse_to_utc_w_missing(datestr):
-    if datestr in ["MISSING", "HIDDEN"]:
-        return "MISSING"
-    if type(datestr) == datetime.datetime:
-        return datestr.astimezone(tzutc())
-    elif type(datestr) == str:
-        return parse(datestr).astimezone(tzutc())
-    else:
-        return datestr
+        return np.nan
 
 def parse_datetime_format3(datestr):
     """

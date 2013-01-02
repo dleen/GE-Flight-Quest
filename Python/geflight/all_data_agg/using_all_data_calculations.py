@@ -9,6 +9,7 @@ class AllTrainingData:
     def __init__(self, data):
         data_set_name = "InitialTrainingSet_rev1"
         self.flight_history = pd.DataFrame(None)
+        self.parsed_fhe = pd.DataFrame(None)
 
         if data == "flight_history":
             print "AllTrainingData Initializing: using data {}".format(data)
@@ -19,6 +20,26 @@ class AllTrainingData:
                     "/" + f + "/" + "FlightHistory/flighthistory.csv",
                     converters = dut.get_flight_history_date_converter())
                 self.flight_history = pd.concat([self.flight_history, temp])
+                print "done"
+
+        if data == "parsed_fhe":
+            print "AllTrainingData Initializing: using data {}".format(data)
+            for f in fn.folder_names_init_set():
+                print "\tLoading parsed_fhe.csv file {}...".format(f),
+                temp = \
+                    pd.read_csv('output_csv/parsed_fhe_' + f + '_' + "all" + '_filtered.csv',
+                    parse_dates=[9,10,11,12,13,14,15,16,17,18,27,28,29,30,31,32,33,34,35,36,37,38,43,47])
+                self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
+                print "done"
+
+        if data == "parsed_fhe_test":
+            print "AllTrainingData Initializing: using data {}".format(data)
+            for f in fn.folder_names_init_set():
+                print "\tLoading parsed_fhe.csv file {}...".format(f),
+                temp = \
+                    pd.read_csv('output_csv/parsed_fhe_' + f + '_' + "test" + '_filtered.csv',
+                    parse_dates=[9,10,11,12,13,14,15,16,17,18,27,28,29,30,31,32,33,34,35,36,37,38,43,47])
+                self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
                 print "done"
 
 # CLEAN THIS UP!!!

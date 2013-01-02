@@ -66,19 +66,19 @@ def create_data(day):
         joined[d] = joined[d].apply(dut.parse_to_utc)
 
     joined['ARA_minutes_after_midnight'] = \
-        joined['ARA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+        joined['ARA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
     joined['AGA_minutes_after_midnight'] = \
-        joined['AGA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+        joined['AGA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
 
     joined['actual_runway_minutes_after_midnight'] = \
-        joined['actual_runway_arrival'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+        joined['actual_runway_arrival'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
     joined['actual_gate_minutes_after_midnight'] = \
-        joined['actual_gate_arrival'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+        joined['actual_gate_arrival'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
 
     joined['ERA_minutes_after_midnight'] = \
-        joined['ERA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+        joined['ERA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
     joined['EGA_minutes_after_midnight'] = \
-        joined['EGA_most_recent'].apply(lambda x: dut.minutes_difference(x,day.midnight_time))
+        joined['EGA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
 
     joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv', index=False)
 

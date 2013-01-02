@@ -11,11 +11,11 @@ import numpy as np
 
 import datetime
 
-def rectify(x):
-    if x < 0:
-        return 0
-    else:
-        return x
+# def rectify(x):
+#     if x < 0:
+#         return 0
+#     else:
+#         return x
 
 def add_column_avg_gate_delays_by_arr_airport(data):
     """

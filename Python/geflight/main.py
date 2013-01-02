@@ -11,6 +11,8 @@ from models import run_model
 
 from transforming import fh_data_for_modeling as fhdfm
 
+from all_data_agg import group_all_data as gad
+
 def main():
     """
     This is not right any more
@@ -74,7 +76,7 @@ def main():
         print "Not a valid option!"
         
 
-def testo():
+def testing_saved_data_model():
     most_new_data = mundf.Using_New_Data_Format()
 
     mode = "nofiltering"
@@ -88,13 +90,18 @@ def testo():
 
     print temp
 
+def alld():
+    gad.clean_all_parsed_fhe()
+
 
 if __name__=='__main__':
-    main()
+    # main()
     
-    #fhdfm.transform_fhe()
+    # fhdfm.transform_fhe()
 
     #testo()
+
+    alld()
 
 
 
