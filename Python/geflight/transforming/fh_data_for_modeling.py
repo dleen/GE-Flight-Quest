@@ -23,15 +23,6 @@ def transform_fhe():
     data_set_name = "InitialTrainingSet_rev1"
     cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-    day = efd.ExtendedFlightDay(fn1[0], data_set_name, mode, cutoff_file)
-
-    print len(day.test_data)
-
-    temp = day.flight_history.ix[day.flight_history['flight_history_id']  day.test_data['flight_history_id']]
-
-    print len(temp)
-
-
     for d in fn1:
         day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
         print "Running day: {}".format(d)  
@@ -91,4 +82,7 @@ def create_data(day):
 
     joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv', index=False)
 
-    joined_test = joined[joined['flight_history_id'] == day.test_data['flight_history_id']]
+    joined_test = pd.merge(left=day.test_data[['flight_history_id']], right=joined,
+        on='flight_history_id', how='left', sort=False)
+
+    joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered.csv', index=False)
