@@ -18,17 +18,18 @@ import numpy as np
 #
 
 def transform_fhe():
-    #mode = "nofiltering"
-    mode = "leaderboard"
-    fn1 = fn.folder_names_test_set()
-    # data_set_name = "InitialTrainingSet_rev1"
-    data_set_name = "PublicLeaderboardSet"
+    # mode = "nofiltering"
+    # mode = "leaderboard"
+    mode = "training"
+    fn1 = fn.folder_names_init_set()
+    data_set_name = "InitialTrainingSet_rev1"
+    # data_set_name = "PublicLeaderboardSet"
 
-    # cutoff_file = "cutoff_time_list_my_cutoff.csv"
+    cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
     for d in fn1:
-        # day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
-        day = efd.ExtendedFlightDay(d, data_set_name, mode)
+        day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
+        # day = efd.ExtendedFlightDay(d, data_set_name, mode)
         print "Running day: {}".format(d)  
         create_data(day)
 
@@ -75,21 +76,21 @@ def create_data(day):
         joined[c + '_minutes_after_midnight'] = \
             joined[c].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
 
-    for c in date_columns():
-        del joined[c]
+    # for c in date_columns():
+    #     del joined[c]
 
     for d in unneces_cols():
         del joined[d]
 
     joined = joined.replace("", np.nan)
 
-    joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv',
+    joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered_with_dates.csv',
         index=False, na_rep="MISSING")
 
     joined_test = pd.merge(left=day.test_data[['flight_history_id']], right=joined,
         on='flight_history_id', how='left', sort=False)
 
-    joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered.csv',
+    joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered_with_dates.csv',
         index=False, na_rep="MISSING")
 
 def date_columns():

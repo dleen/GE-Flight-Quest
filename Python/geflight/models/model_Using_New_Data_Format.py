@@ -68,8 +68,6 @@ class Using_New_Data_Format():
         pred.flight_predictions['actual_gate_arrival'] = \
             pred.flight_predictions['actual_gate_arrival'].apply(lambda x: rectify(x))
 
-        pred.flight_predictions = pred.flight_predictions.sort(columns='flight_history_id')
-
         temp1 = data[pd.isnull(data['EGA_most_recent_minutes_after_midnight'])]
         temp2 = data[pd.isnull(data['ERA_most_recent_minutes_after_midnight'])]
 
@@ -84,11 +82,12 @@ class Using_New_Data_Format():
         #         dut.convert_predictions_from_datetimes_to_minutes(pred.test_data, day.midnight_time)
 
         pred.test_data = data[['flight_history_id','actual_runway_arrival_minutes_after_midnight',
-        'actual_gate_arrival_minutes_after_midnight']]
+            'actual_gate_arrival_minutes_after_midnight']]
 
         pred.test_data.columns = ['flight_history_id','actual_runway_arrival','actual_gate_arrival']
 
-        # sc.sanity_check(pred, "training")
+        if day.mode == "training":
+            sc.sanity_check(pred, "training")
 
         return pred
 
@@ -97,12 +96,10 @@ class Using_New_Data_Format():
 
         for i, row in temp.iterrows():
             if row['gate_delay_mins'] >= 0:
-                # gd = datetime.timedelta(seconds=row['gate_delay_mins'])
                 gd = row['gate_delay_mins'] / float(60)
                 data['EGA_most_recent_minutes_after_midnight'][i] = \
                     data['ERA_most_recent_minutes_after_midnight'][i] + gd
             elif row['gate_delay_mins'] < 0:
-                # gd = datetime.timedelta(seconds=abs(row['gate_delay_mins']))
                 gd = abs(row['gate_delay_mins']) / float(60)
                 data['EGA_most_recent_minutes_after_midnight'][i] = \
                     data['ERA_most_recent_minutes_after_midnight'][i]
@@ -159,8 +156,3 @@ class Using_New_Data_Format():
         else:
             print row
             print "NO TIME TO USE"
-
-
-# Update it to best 9.029 model and check it that works.
-
-# Then try and beat it.

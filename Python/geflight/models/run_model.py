@@ -39,6 +39,7 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
 
     if "leaderboard" in mode:
 
+        fin_A.flight_predictions = fin_A.flight_predictions.sort(columns='flight_history_id')
         fin_A.flight_predictions.to_csv('test.csv', index=False)
         print "Predictions written to csv file in Python folder."
         if model_B != None:

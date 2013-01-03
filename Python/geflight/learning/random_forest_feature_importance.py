@@ -50,12 +50,12 @@ def load_and_format_data(filename, mode=""):
 
     ind = Z['flight_history_id']
 
-    return [X, y, ind]
+    return [Z, X, y, ind]
 
 def r_forest():
 
-    [X_train, y_train, ind_train] = load_and_format_data('all_combined_test_no_dates')
-    [X_pred, y_pred, ind_pred] = load_and_format_data('all_combined_test_no_dates_leaderboard', 'leaderboard')
+    [Z, X_train, y_train, ind_train] = load_and_format_data('all_combined_test_no_dates')
+    # [X_pred, y_pred, ind_pred] = load_and_format_data('all_combined_test_no_dates_leaderboard', 'leaderboard')
 
     # y_train_runway = y_train['actual_runway_arrival_minutes_after_midnight']
     # y_train_gate   = y_train['actual_gate_arrival_minutes_after_midnight']
@@ -75,29 +75,44 @@ def r_forest():
     # forest.fit(X_train, y_train_gate)
     # y_pred_gate = forest.predict(X_pred)
 
-    forest.fit(X_train, y_train)
-    y_pred = forest.predict(X_pred)
+    # forest.fit(X_train, y_train)
+    # y_pred = forest.predict(X_pred)
 
 
-    y_pred_runway = y_pred[:,0]
-    y_pred_gate = y_pred[:,1]
+    # y_pred_runway = y_pred[:,0]
+    # y_pred_gate = y_pred[:,1]
 
 
-    pred = fd.FlightPredictions()
+    # pred = fd.FlightPredictions()
 
-    pred.flight_predictions = pred.flight_predictions.reindex(range(len(ind_pred)))
+    # pred.flight_predictions = pred.flight_predictions.reindex(range(len(ind_pred)))
 
-    pred.flight_predictions['flight_history_id']     = ind_pred
-    pred.flight_predictions['actual_runway_arrival'] = y_pred_runway
-    pred.flight_predictions['actual_gate_arrival']   = y_pred_gate
+    # pred.flight_predictions['flight_history_id']     = ind_pred
+    # pred.flight_predictions['actual_runway_arrival'] = y_pred_runway
+    # pred.flight_predictions['actual_gate_arrival']   = y_pred_gate
 
-    pred.flight_predictions = pred.flight_predictions.sort(columns='flight_history_id')
+    # pred.flight_predictions = pred.flight_predictions.sort(columns='flight_history_id')
 
-    pred.flight_predictions.to_csv('test_rand_forest.csv', index=False)
+    # pred.flight_predictions.to_csv('test_rand_forest.csv', index=False)
 
 
-    # kfold = cross_validation.KFold(n=len(X), k=3, indices=True)
+    kfold = cross_validation.KFold(n=len(X), k=3, indices=True)
 
+    for train, test in kfold:
+            forest.fit(X_train.ix[train], y_train.ix[train])
+            y_pred = forest.predict(X_train.ix[test])
+            ind_pred = ind_train.ix[test]
+
+            y_pred_runway = y_pred[:,0]
+            y_pred_gate = y_pred[:,1]
+
+            pred.flight_predictions['flight_history_id']     = ind_pred
+            pred.flight_predictions['actual_runway_arrival'] = y_pred_runway
+            pred.flight_predictions['actual_gate_arrival']   = y_pred_gate
+            
+    print pred.flight_predictions
+
+    
     # ans = [forest.fit(X.ix[train], y.ix[train]).score(X.ix[test], y.ix[test]) for train, test in kfold]
 
     # print ans
@@ -108,18 +123,18 @@ def r_forest():
     #   Z[c] = le.inverse_transform(Z[c])
 
     # importances = forest.feature_importances_
-    # # std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
+    # std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
     # indices = np.argsort(importances)[::-1]
 
-    # f_names = X.columns[indices]
+    # # f_names = X.columns[indices]
 
     # # Plot the feature importances of the forest
     # import pylab as pl
     # pl.figure()
     # pl.title("Feature importances")
-    # # pl.bar(xrange(len(indices)), importances[indices], color="r", yerr=std[indices], align="center")
-    # pl.bar(xrange(len(indices)), importances[indices], color="r", align="center")
-    # pl.xticks(xrange(len(indices)), f_names, rotation='vertical')
+    # pl.bar(xrange(len(indices)), importances[indices], color="r", yerr=std[indices], align="center")
+    # # pl.bar(xrange(len(indices)), importances[indices], color="r", align="center")
+    # pl.xticks(xrange(len(indices)), indices, rotation='vertical')
     # pl.xlim([-1, len(indices)])
     # pl.show()
 

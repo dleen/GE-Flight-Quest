@@ -102,9 +102,9 @@ def lurn():
 
 
 if __name__=='__main__':
-    main()
+    # main()
     
-    # fhdfm.transform_fhe()
+    fhdfm.transform_fhe()
 
     #testo()
 
