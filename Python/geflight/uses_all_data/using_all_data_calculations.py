@@ -28,6 +28,8 @@ class AllTrainingData:
                 print "\tLoading parsed_fhe.csv file {}...".format(f),
                 temp = \
                     pd.read_csv('output_csv/parsed_fhe_' + f + '_' + "all" + '_filtered.csv',
+                    # might have to fix to work with test data?
+                    na_values=["MISSING"], keep_default_na=False,
                     parse_dates=[9,10,11,12,13,14,15,16,17,18,27,28,29,30,31,32,33,34,35,36,37,38,43,47])
                 self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
                 print "done"
@@ -38,7 +40,30 @@ class AllTrainingData:
                 print "\tLoading parsed_fhe.csv file {}...".format(f),
                 temp = \
                     pd.read_csv('output_csv/parsed_fhe_' + f + '_' + "test" + '_filtered.csv',
+                    na_values=["MISSING"], keep_default_na=False,
                     parse_dates=[9,10,11,12,13,14,15,16,17,18,27,28,29,30,31,32,33,34,35,36,37,38,43,47])
+                self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
+                print "done"
+
+        if data == "parsed_fhe_no_dates":
+            print "AllTrainingData Initializing: using data {}".format(data)
+            for f in fn.folder_names_init_set():
+                print "\tLoading parsed_fhe.csv file {}...".format(f),
+                temp = \
+                    pd.read_csv('output_csv/parsed_fhe_' + f + '_' + "all" + '_filtered.csv',
+                    # might have to fix to work with test data?
+                    na_values=["MISSING"], keep_default_na=False)
+                self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
+                print "done"
+
+        if data == "parsed_fhe_test_no_dates":
+            print "AllTrainingData Initializing: using data {}".format(data)
+            for f in fn.folder_names_test_set():
+                print "\tLoading parsed_fhe_test.csv file {}...".format(f),
+                temp = \
+                    pd.read_csv('output_csv/parsed_fhe_' + f + '_' + "test" + '_filtered.csv',
+                    # might have to fix to work with test data?
+                    na_values=["MISSING"], keep_default_na=False)
                 self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
                 print "done"
 

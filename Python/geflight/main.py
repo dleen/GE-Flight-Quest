@@ -45,12 +45,14 @@ def main():
     can be found in flight_history_events.csv
     """
 
-    modes = ["training"]
-    #mode = "leaderboard"
+    # modes = ["training"]
+    modes = ["leaderboard"]
 
     # Run model using the most recently updated estimates of 
     # the runway arrival and the gate arrival as the predictions 
     # for the actual arrival times:
+
+    most_new_data = mundf.Using_New_Data_Format()
 
     most_recent_gdly = mmgd.MRU_with_gate_delay_est()
     most_recent_gdly_upd = mmgd.MRU_with_gate_delay_upd()
@@ -62,7 +64,7 @@ def main():
         fn1 = fn.folder_names_test_set()
         data_set_name = "PublicLeaderboardSet"
 
-        run_model.run_model(most_recent, None, fn1, data_set_name, modes)
+        run_model.run_model(most_new_data, None, fn1, data_set_name, modes)
 
     elif "training" in modes:
 
@@ -71,7 +73,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_recent, None, fn1, data_set_name, modes, cutoff_file)
+        temp = run_model.run_model(most_new_data, None, fn1, data_set_name, modes, cutoff_file)
         print temp
 
     else:
@@ -96,19 +98,21 @@ def alld():
     gad.clean_all_parsed_fhe()
 
 def lurn():
-    rffi.forest()
+    rffi.r_forest()
 
 
 if __name__=='__main__':
-    # main()
+    main()
     
-    fhdfm.transform_fhe()
+    # fhdfm.transform_fhe()
 
     #testo()
 
     # alld()
 
     # lurn()
+
+    # testing_saved_data_model()
 
 
 

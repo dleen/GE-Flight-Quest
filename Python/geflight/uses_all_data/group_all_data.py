@@ -14,24 +14,52 @@ def del_unneces_cols():
 
     return cols
 
+def non_date_cols_to_str():
+
+    cols_a = ['departure_terminal',
+    'departure_gate',
+    'arrival_terminal',
+    'arrival_gate',
+    'flight_number',
+    'airline_icao_code',
+    'arrival_airport_icao_code',
+    'departure_airport_icao_code',
+    'icao_aircraft_type_actual',
+    'status'
+    ]
+
+    cols_b = ['number_of_gate_adjustments',
+    'number_of_time_adjustments',
+    'scheduled_air_time',
+    'scheduled_block_time'
+    ]
+
+    a = {x : x_to_str for x in cols_a}
+    b = {x : x_to_float for x in cols_b}
+
+    c = dict(a)
+    c.update(b)
+
+    return a
+
+def x_to_str(x):
+    return str(x)
+
+def x_to_float(x):
+    return float(x)
+
 def clean_all_parsed_fhe():
-    alld = uadc.AllTrainingData("parsed_fhe")
+    alld = uadc.AllTrainingData("parsed_fhe_test_no_dates")
 
-    for c in del_unneces_cols():
-        del alld.parsed_fhe[c]
+    alld.parsed_fhe.to_csv('output_csv/all_combined_test_no_dates_leaderboard.csv', index=False)
 
-    alld.parsed_fhe.to_csv('output_csv/all_combined.csv', index=False)
-
-def load_all_parsed_fhe():
+def load_all_parsed_fhe(filename):
     print "Loading combined fhe file...",
     data = \
-        pd.read_csv('output_csv/all_combined_test.csv',
+        pd.read_csv('output_csv/' + filename + '.csv',
+            na_values=["MISSING"], keep_default_na=True, 
+            converters=non_date_cols_to_str())
         # VVV change
-        parse_dates=[4,5,9,10,12,13,15,16,17,18,20,21,33,36,37,40,41,42,43,45])
     print "done"
 
     return data
-
-
-
-# np.asarray

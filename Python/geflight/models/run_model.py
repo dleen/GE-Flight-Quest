@@ -24,7 +24,8 @@ def run_model(model_A, model_B, days_list, data_set_name, mode, cutoff_filename=
         else:
             print "Running models '{}', '{}' on day {} (day {} of {}):".format(model_A, model_B, d, i + 1, len(days_list))
 
-        day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_filename)
+        # day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_filename)
+        day = fd.FlightDay(d, data_set_name, mode, cutoff_filename)
 
         fin_A = return_predictions(model_A, day, fin_A)
 

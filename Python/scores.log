@@ -62,3 +62,4 @@
 2013-01-01 23:56:44.782651: Using model(s): Original model, None. Scores: {'Original model': 9.693259480503869, 'None': None}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv
 2013-01-02 01:49:04.098457: Using model(s): Original model, None. Scores: {'Original model': 9.693259480503869, 'None': None}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv
 2013-01-02 03:01:58.902493: Using model(s): Original model, None. Scores: {'Original model': 9.693259480503869, 'None': None}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv
+2013-01-03 15:53:48.691133: Using model(s): Using new data format, None. Scores: {'None': None, 'Using new data format': 8.8700986868934066}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv

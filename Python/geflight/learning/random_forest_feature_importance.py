@@ -1,75 +1,126 @@
 import numpy as np
 
-from sklearn.ensemble import ExtraTreesClassifier
+from models import flightday as fd
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.ensemble import RandomForestRegressor
 
-from sklearn import tree
+from sklearn import preprocessing
 
+from sklearn import cross_validation
 
 from uses_all_data import group_all_data as gad
 
+def load_and_format_data(filename, mode=""):
+    Z = gad.load_all_parsed_fhe(filename)
 
-def forest():
-	Z = gad.load_all_parsed_fhe()
+    del Z['AGA_most_recent']
+    del Z['ARA_most_recent']
 
-	X = np.asarray(Z[['airline_icao_code',
-		'flight_number',
-		'departure_airport_icao_code',
-		'AGD_most_recent',
-		'AGD_update_time',
-		'ARA_update_time',
-		'ARD_most_recent',
-		'ARD_update_time',
-		'EGA_minutes_after_midnight',
-		'EGA_most_recent',
-		'EGA_update_time',
-		'ERA_minutes_after_midnight',
-		'ERA_most_recent',
-		'ERA_update_time',
-		'actual_gate_departure',
-		'actual_runway_departure',
-		'arrival_airport_icao_code',
-		'departure_airport_icao_code',
-		'arrival_gate',
-		'arrival_terminal',
-		'departure_gate',
-		'departure_terminal',
-		'icao_aircraft_type_actual',
-		'last_update_time',
-		'number_of_gate_adjustments',
-		'number_of_time_adjustments',
-		'published_arrival',
-		'published_departure',
-		'scheduled_air_time',
-		'scheduled_block_time',
-		'scheduled_gate_arrival',
-		'scheduled_gate_departure',
-		'scheduled_runway_arrival',
-		'scheduled_runway_departure',
-		'status',
-		'status_update_time',
-		'was_gate_adjusted',
-		'was_time_adjusted']])
+    if mode != "leaderboard":
+        Z = Z.dropna()
+        Z = Z.reset_index(drop=True)
 
-	xx = Z['status'].values
+    X = Z.copy()
 
-	vectorizer = CountVectorizer(min_df=1)
+    del X['actual_gate_arrival_minutes_after_midnight']
+    del X['actual_runway_arrival_minutes_after_midnight']
+    del X['flight_history_id']
 
-	Z = vectorizer.fit_transform(xx)
+    le = preprocessing.LabelEncoder()
 
-	print vectorizer.get_feature_names()
+    cols = ['status',
+        'icao_aircraft_type_actual',
+        'departure_airport_icao_code',
+        'arrival_airport_icao_code',
+        'airline_icao_code',
+        'flight_number',
+        'arrival_gate',
+        'arrival_terminal',
+        'departure_gate',
+        'departure_terminal'
+    ]
+
+    le.fit(X[cols].values)
+
+    for c in cols:
+        X[c] = le.transform(X[c])
+
+    y = Z[['actual_runway_arrival_minutes_after_midnight',
+        'actual_gate_arrival_minutes_after_midnight']]
+
+    ind = Z['flight_history_id']
+
+    return [X, y, ind]
+
+def r_forest():
+
+    [X_train, y_train, ind_train] = load_and_format_data('all_combined_test_no_dates')
+    [X_pred, y_pred, ind_pred] = load_and_format_data('all_combined_test_no_dates_leaderboard', 'leaderboard')
+
+    # y_train_runway = y_train['actual_runway_arrival_minutes_after_midnight']
+    # y_train_gate   = y_train['actual_gate_arrival_minutes_after_midnight']
 
 
-	y = np.asarray(Z[['actual_gate_minutes_after_midnight',
-		'actual_runway_minutes_after_midnight']])
+    forest = RandomForestRegressor(n_estimators=2, n_jobs=-1,
+      compute_importances=True, random_state=None)
 
-	# clf = tree.DecisionTreeClassifier()
 
-	# clf = clf.fit(X,y)
+    # forest = GradientBoostingRegressor(n_estimators=200,
+    #     learn_rate=0.1, max_depth=5, random_state=None, loss='ls')
 
-	# r_forest = ExtraTreesClassifier(n_estimators=200,
-	# 	compute_importances=True,
-	# 	random_state=0)
 
-	# r_forest.fit(X,y)
+    # forest.fit(X_train, y_train_runway)
+    # y_pred_runway = forest.predict(X_pred)
+
+    # forest.fit(X_train, y_train_gate)
+    # y_pred_gate = forest.predict(X_pred)
+
+    forest.fit(X_train, y_train)
+    y_pred = forest.predict(X_pred)
+
+
+    y_pred_runway = y_pred[:,0]
+    y_pred_gate = y_pred[:,1]
+
+
+    pred = fd.FlightPredictions()
+
+    pred.flight_predictions = pred.flight_predictions.reindex(range(len(ind_pred)))
+
+    pred.flight_predictions['flight_history_id']     = ind_pred
+    pred.flight_predictions['actual_runway_arrival'] = y_pred_runway
+    pred.flight_predictions['actual_gate_arrival']   = y_pred_gate
+
+    pred.flight_predictions = pred.flight_predictions.sort(columns='flight_history_id')
+
+    pred.flight_predictions.to_csv('test_rand_forest.csv', index=False)
+
+
+    # kfold = cross_validation.KFold(n=len(X), k=3, indices=True)
+
+    # ans = [forest.fit(X.ix[train], y.ix[train]).score(X.ix[test], y.ix[test]) for train, test in kfold]
+
+    # print ans
+
+    # forest.fit(X,y)
+
+    # for c in cols:
+    #   Z[c] = le.inverse_transform(Z[c])
+
+    # importances = forest.feature_importances_
+    # # std = np.std([tree.feature_importances_ for tree in forest.estimators_], axis=0)
+    # indices = np.argsort(importances)[::-1]
+
+    # f_names = X.columns[indices]
+
+    # # Plot the feature importances of the forest
+    # import pylab as pl
+    # pl.figure()
+    # pl.title("Feature importances")
+    # # pl.bar(xrange(len(indices)), importances[indices], color="r", yerr=std[indices], align="center")
+    # pl.bar(xrange(len(indices)), importances[indices], color="r", align="center")
+    # pl.xticks(xrange(len(indices)), f_names, rotation='vertical')
+    # pl.xlim([-1, len(indices)])
+    # pl.show()
+
+

@@ -9,6 +9,11 @@ def sanity_check(pred, mode):
         print ""
         print "\t\tPrediction problems:"
         for i, row in combined_on_id.iterrows():
+
+            # print "TESTING:"
+            # print row['actual_runway_arrival_actual']
+            # print row['actual_runway_arrival_predicted']
+            
             if row['actual_runway_arrival_predicted'] < 0 or row['actual_runway_arrival_predicted'] > 1980:
                 print "\t\tSanity prob flight {}! era: {}, ara: {}"\
                 .format(row['flight_history_id'], row['actual_runway_arrival_predicted'], row['actual_runway_arrival_actual'])
@@ -28,6 +33,7 @@ def sanity_check(pred, mode):
                     row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted'])
 
         print "\t",
+
     elif mode == "leaderboard":
         for i, row in pred.flight_predictions.iterrows():
             pass

@@ -11,11 +11,11 @@ import numpy as np
 
 import datetime
 
-# def rectify(x):
-#     if x < 0:
-#         return 0
-#     else:
-#         return x
+def rectify(x):
+    if x < 0:
+        return 0
+    else:
+        return x
 
 def add_column_avg_gate_delays_by_arr_airport(data):
     """
@@ -59,8 +59,8 @@ class Using_New_Data_Format():
         pred.flight_predictions = pred.flight_predictions.reindex(range(len(data['flight_history_id'])))
 
         pred.flight_predictions['flight_history_id']     = data['flight_history_id']
-        pred.flight_predictions['actual_runway_arrival'] = data['ERA_minutes_after_cutoff']
-        pred.flight_predictions['actual_gate_arrival']   = data['EGA_minutes_after_cutoff']
+        pred.flight_predictions['actual_runway_arrival'] = data['ERA_most_recent_minutes_after_midnight']
+        pred.flight_predictions['actual_gate_arrival']   = data['EGA_most_recent_minutes_after_midnight']
 
         pred.flight_predictions['actual_runway_arrival'] = \
             pred.flight_predictions['actual_runway_arrival'].apply(lambda x: rectify(x))
@@ -68,79 +68,92 @@ class Using_New_Data_Format():
         pred.flight_predictions['actual_gate_arrival'] = \
             pred.flight_predictions['actual_gate_arrival'].apply(lambda x: rectify(x))
 
+        pred.flight_predictions = pred.flight_predictions.sort(columns='flight_history_id')
 
-        temp1 = data[pd.isnull(data['EGA_minutes_after_cutoff'])]
-        temp2 = data[pd.isnull(data['ERA_minutes_after_cutoff'])]
+        temp1 = data[pd.isnull(data['EGA_most_recent_minutes_after_midnight'])]
+        temp2 = data[pd.isnull(data['ERA_most_recent_minutes_after_midnight'])]
 
         if len(temp1) or len(temp2):
             print "MISSING values got through"
 
-        pred.test_data = day.test_data.copy()
+        # pred.test_data = day.test_data.copy()
 
-        if day.mode in ["training", "nofiltering"]: 
-            pred.test_data = \
-                dut.convert_predictions_from_datetimes_to_minutes(pred.test_data, day.midnight_time)
+        # if day.mode in ["training", "nofiltering"]:
+        #     print "converting"
+        #     pred.test_data = \
+        #         dut.convert_predictions_from_datetimes_to_minutes(pred.test_data, day.midnight_time)
 
-        sc.sanity_check(pred, "training")
+        pred.test_data = data[['flight_history_id','actual_runway_arrival_minutes_after_midnight',
+        'actual_gate_arrival_minutes_after_midnight']]
+
+        pred.test_data.columns = ['flight_history_id','actual_runway_arrival','actual_gate_arrival']
+
+        # sc.sanity_check(pred, "training")
 
         return pred
 
     def initial_prediction(self, data):
-        temp = data[data['ERA_most_recent'] > data['EGA_most_recent']]
+        temp = data[data['ERA_most_recent_minutes_after_midnight'] > data['EGA_most_recent_minutes_after_midnight']]
 
         for i, row in temp.iterrows():
             if row['gate_delay_mins'] >= 0:
-                gd = datetime.timedelta(seconds=row['gate_delay_mins'])
-                data['EGA_minutes_after_cutoff'][i] = data['ERA_minutes_after_cutoff'][i] + gd
+                # gd = datetime.timedelta(seconds=row['gate_delay_mins'])
+                gd = row['gate_delay_mins'] / float(60)
+                data['EGA_most_recent_minutes_after_midnight'][i] = \
+                    data['ERA_most_recent_minutes_after_midnight'][i] + gd
             elif row['gate_delay_mins'] < 0:
-                gd = datetime.timedelta(seconds=abs(row['gate_delay_mins']))
-                data['EGA_minutes_after_cutoff'][i] = data['ERA_minutes_after_cutoff'][i]
-                data['ERA_minutes_after_cutoff'][i] = data['EGA_minutes_after_cutoff'][i] - gd
+                # gd = datetime.timedelta(seconds=abs(row['gate_delay_mins']))
+                gd = abs(row['gate_delay_mins']) / float(60)
+                data['EGA_most_recent_minutes_after_midnight'][i] = \
+                    data['ERA_most_recent_minutes_after_midnight'][i]
+                data['ERA_most_recent_minutes_after_midnight'][i] = \
+                    data['EGA_most_recent_minutes_after_midnight'][i] - gd
             else:
-                data['EGA_minutes_after_cutoff'][i] = data['ERA_minutes_after_cutoff'][i]
+                data['EGA_most_recent_minutes_after_midnight'][i] = \
+                    data['ERA_most_recent_minutes_after_midnight'][i]
 
     def load_day(self, folder_name):
-        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test_data' + '_filtered.csv', 
+        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered.csv', 
             na_values=["MISSING"], keep_default_na=True)
         return data
 
     def check_for_missing_era(self, data, midnight, cutoff):
-        data['ERA_minutes_after_cutoff'] = data['ERA_minutes_after_cutoff'].apply(lambda x: float(x))
+        # data['ERA_minutes_after_cutoff'] = data['ERA_minutes_after_cutoff'].apply(lambda x: float(x))
 
-        temp = data[pd.isnull(data['ERA_minutes_after_cutoff'])]
+        temp = data[pd.isnull(data['ERA_most_recent_minutes_after_midnight'])]
 
         for i, row in temp.iterrows():
-            data['ERA_minutes_after_cutoff'][i] = \
+            data['ERA_most_recent_minutes_after_midnight'][i] = \
                 self.ERA_pick_times_in_order(row, midnight, cutoff)
 
     def check_for_missing_ega(self, data, midnight, cutoff):
-        data['EGA_minutes_after_cutoff'] = data['EGA_minutes_after_cutoff'].apply(lambda x: float(x))
+        # data['EGA_minutes_after_cutoff'] = data['EGA_minutes_after_cutoff'].apply(lambda x: float(x))
 
-        temp = data[pd.isnull(data['EGA_minutes_after_cutoff'])]
+        temp = data[pd.isnull(data['EGA_most_recent_minutes_after_midnight'])]
 
         for i, row in temp.iterrows():
-            data['EGA_minutes_after_cutoff'][i] = \
+            data['EGA_most_recent_minutes_after_midnight'][i] = \
                 self.EGA_pick_times_in_order(row, midnight, cutoff)
 
     def EGA_pick_times_in_order(self, row, midnight, cutoff):
-        if pd.notnull(row['EGA_minutes_after_cutoff']):
-            return row['EGA_minutes_after_cutoff']
-        elif pd.notnull(row['ERA_minutes_after_cutoff']):
-            return row['ERA_minutes_after_cutoff']
-        elif pd.notnull(row['scheduled_gate_arrival']):
-            return dut.minutes_difference(dut.parse_to_utc(row['scheduled_gate_arrival']), midnight)
+        if pd.notnull(row['EGA_most_recent_minutes_after_midnight']):
+            return row['EGA_most_recent_minutes_after_midnight']
+        elif pd.notnull(row['ERA_most_recent_minutes_after_midnight']):
+            return row['ERA_most_recent_minutes_after_midnight']
+        elif pd.notnull(row['scheduled_gate_arrival_minutes_after_midnight']):
+            return row['scheduled_gate_arrival_minutes_after_midnight']
         else:
             self.ERA_pick_times_in_order(row, midnight)
 
     def ERA_pick_times_in_order(self, row, midnight, cutoff):
-        if pd.notnull(row['ERA_minutes_after_cutoff']):
-            return row['ERA_minutes_after_cutoff']
-        elif pd.notnull(row['EGA_minutes_after_cutoff']):
-            return row['EGA_minutes_after_cutoff']
-        elif pd.notnull(row['scheduled_runway_arrival']):
-            return dut.minutes_difference(dut.parse_to_utc(row['scheduled_runway_arrival']), midnight)
-        elif pd.notnull(row['published_arrival']):
-            return dut.minutes_difference(dut.parse_to_utc(row['published_arrival']), midnight)
+        if pd.notnull(row['ERA_most_recent_minutes_after_midnight']):
+            return row['ERA_most_recent_minutes_after_midnight']
+        elif pd.notnull(row['EGA_most_recent_minutes_after_midnight']):
+            return row['EGA_most_recent_minutes_after_midnight']
+        elif pd.notnull(row['scheduled_runway_arrival_minutes_after_midnight']):
+            return row['scheduled_runway_arrival_minutes_after_midnight']
+        elif pd.notnull(row['published_arrival_minutes_after_midnight']):
+            return row['published_arrival_minutes_after_midnight']
         elif cutoff:
             return dut.minutes_difference(cutoff, midnight)
         else:

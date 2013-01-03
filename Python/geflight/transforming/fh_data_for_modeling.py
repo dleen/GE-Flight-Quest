@@ -19,13 +19,16 @@ import numpy as np
 
 def transform_fhe():
     #mode = "nofiltering"
-    mode = "training"
-    fn1 = fn.folder_names_init_set()
-    data_set_name = "InitialTrainingSet_rev1"
-    cutoff_file = "cutoff_time_list_my_cutoff.csv"
+    mode = "leaderboard"
+    fn1 = fn.folder_names_test_set()
+    # data_set_name = "InitialTrainingSet_rev1"
+    data_set_name = "PublicLeaderboardSet"
+
+    # cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
     for d in fn1:
-        day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
+        # day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
+        day = efd.ExtendedFlightDay(d, data_set_name, mode)
         print "Running day: {}".format(d)  
         create_data(day)
 
@@ -68,26 +71,85 @@ def create_data(day):
     for d in days_to_parse:
         joined[d] = joined[d].apply(dut.parse_to_utc)
 
-    joined['ARA_minutes_after_midnight'] = \
-        joined['ARA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
-    joined['AGA_minutes_after_midnight'] = \
-        joined['AGA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
+    for c in date_columns():
+        joined[c + '_minutes_after_midnight'] = \
+            joined[c].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
 
-    joined['actual_runway_minutes_after_midnight'] = \
-        joined['actual_runway_arrival'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
-    joined['actual_gate_minutes_after_midnight'] = \
-        joined['actual_gate_arrival'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
+    for c in date_columns():
+        del joined[c]
 
-    joined['ERA_minutes_after_midnight'] = \
-        joined['ERA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
-    joined['EGA_minutes_after_midnight'] = \
-        joined['EGA_most_recent'].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
+    for d in unneces_cols():
+        del joined[d]
 
     joined = joined.replace("", np.nan)
 
-    joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv', index=False, na_rep="MISSING")
+    joined.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "all" + '_filtered.csv',
+        index=False, na_rep="MISSING")
 
     joined_test = pd.merge(left=day.test_data[['flight_history_id']], right=joined,
         on='flight_history_id', how='left', sort=False)
 
-    joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered.csv', index=False, na_rep="MISSING")
+    joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered.csv',
+        index=False, na_rep="MISSING")
+
+def date_columns():
+
+    cols = ['published_departure',
+    'published_arrival',
+    'scheduled_gate_departure',
+    'actual_gate_departure',
+    'scheduled_gate_arrival',
+    'actual_gate_arrival',
+    'scheduled_runway_departure',
+    'actual_runway_departure',
+    'scheduled_runway_arrival',
+    'actual_runway_arrival',
+    'AGA_update_time',
+    'AGD_most_recent',
+    'AGD_update_time',
+    'ARA_update_time',
+    'ARD_most_recent',
+    'ARD_update_time',
+    'EGA_most_recent',
+    'EGA_update_time',
+    'ERA_most_recent',
+    'ERA_update_time',
+    'last_update_time',
+    'status_update_time'
+    ]
+
+    return cols
+
+def unneces_cols():
+
+    cols = ['airline_code',
+    'departure_airport_code',
+    'arrival_airport_code',
+    'creator_code',
+    'departure_airport_timezone_offset',
+    'arrival_airport_timezone_offset',
+    'scheduled_aircraft_type',
+    'actual_aircraft_type'
+    ]
+
+    return cols
+
+def non_date_columns():
+
+    cols = ['departure_terminal',
+    'departure_gate',
+    'arrival_terminal',
+    'arrival_gate',
+    'flight_number',
+    'airline_icao_code',
+    'arrival_airport_icao_code',
+    'departure_airport_icao_code',
+    'icao_aircraft_type_actual',
+    'number_of_gate_adjustments',
+    'number_of_time_adjustments',
+    'scheduled_air_time',
+    'scheduled_block_time',
+    'status',
+    'was_gate_adjusted',
+    'was_time_adjusted'
+    ]
