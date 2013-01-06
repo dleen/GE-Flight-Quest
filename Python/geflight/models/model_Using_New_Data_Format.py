@@ -11,11 +11,7 @@ import numpy as np
 
 import datetime
 
-def rectify(x):
-    if x < 0:
-        return 0
-    else:
-        return x
+
 
 def add_column_avg_gate_delays_by_arr_airport(data):
     """
@@ -63,10 +59,10 @@ class Using_New_Data_Format():
         pred.flight_predictions['actual_gate_arrival']   = data['EGA_most_recent_minutes_after_midnight']
 
         pred.flight_predictions['actual_runway_arrival'] = \
-            pred.flight_predictions['actual_runway_arrival'].apply(lambda x: rectify(x))
+            pred.flight_predictions['actual_runway_arrival'].apply(lambda x: self.rectify(x))
 
         pred.flight_predictions['actual_gate_arrival'] = \
-            pred.flight_predictions['actual_gate_arrival'].apply(lambda x: rectify(x))
+            pred.flight_predictions['actual_gate_arrival'].apply(lambda x: self.rectify(x))
 
         temp1 = data[pd.isnull(data['EGA_most_recent_minutes_after_midnight'])]
         temp2 = data[pd.isnull(data['ERA_most_recent_minutes_after_midnight'])]
@@ -74,19 +70,12 @@ class Using_New_Data_Format():
         if len(temp1) or len(temp2):
             print "MISSING values got through"
 
-        # pred.test_data = day.test_data.copy()
-
-        # if day.mode in ["training", "nofiltering"]:
-        #     print "converting"
-        #     pred.test_data = \
-        #         dut.convert_predictions_from_datetimes_to_minutes(pred.test_data, day.midnight_time)
-
         pred.test_data = data[['flight_history_id','actual_runway_arrival_minutes_after_midnight',
             'actual_gate_arrival_minutes_after_midnight']]
 
         pred.test_data.columns = ['flight_history_id','actual_runway_arrival','actual_gate_arrival']
 
-        if day.mode == "training":
+        if "training" in day.mode:
             sc.sanity_check(pred, "training")
 
         return pred
@@ -95,12 +84,12 @@ class Using_New_Data_Format():
         temp = data[data['ERA_most_recent_minutes_after_midnight'] > data['EGA_most_recent_minutes_after_midnight']]
 
         for i, row in temp.iterrows():
-            if row['gate_delay_mins'] >= 0:
-                gd = row['gate_delay_mins'] / float(60)
+            if row['gate_delay_seconds'] >= 0:
+                gd = row['gate_delay_seconds'] / float(60)
                 data['EGA_most_recent_minutes_after_midnight'][i] = \
                     data['ERA_most_recent_minutes_after_midnight'][i] + gd
-            elif row['gate_delay_mins'] < 0:
-                gd = abs(row['gate_delay_mins']) / float(60)
+            elif row['gate_delay_seconds'] < 0:
+                gd = abs(row['gate_delay_seconds']) / float(60)
                 data['EGA_most_recent_minutes_after_midnight'][i] = \
                     data['ERA_most_recent_minutes_after_midnight'][i]
                 data['ERA_most_recent_minutes_after_midnight'][i] = \
@@ -110,13 +99,22 @@ class Using_New_Data_Format():
                     data['ERA_most_recent_minutes_after_midnight'][i]
 
     def load_day(self, folder_name):
-        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered.csv', 
+        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered_with_dates.csv', 
+        # data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered.csv', 
             na_values=["MISSING"], keep_default_na=True)
         return data
 
-    def check_for_missing_era(self, data, midnight, cutoff):
-        # data['ERA_minutes_after_cutoff'] = data['ERA_minutes_after_cutoff'].apply(lambda x: float(x))
+    def save_day(self, pred, data):
+        pred_rename = pred.flight_predictions.rename(columns={'actual_runway_arrival' : 'best_model_ARA',
+            'actual_gate_arrival' : 'best_model_AGA'})
 
+        data = pd.merge(left=data, right=pred_rename, on='flight_history_id',
+            how='left', sort=False)
+
+        data.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + \
+            '_filtered_with_dates_with_best_prediction.csv', index=False, na_rep="MISSING")
+
+    def check_for_missing_era(self, data, midnight, cutoff):
         temp = data[pd.isnull(data['ERA_most_recent_minutes_after_midnight'])]
 
         for i, row in temp.iterrows():
@@ -124,8 +122,6 @@ class Using_New_Data_Format():
                 self.ERA_pick_times_in_order(row, midnight, cutoff)
 
     def check_for_missing_ega(self, data, midnight, cutoff):
-        # data['EGA_minutes_after_cutoff'] = data['EGA_minutes_after_cutoff'].apply(lambda x: float(x))
-
         temp = data[pd.isnull(data['EGA_most_recent_minutes_after_midnight'])]
 
         for i, row in temp.iterrows():
@@ -156,3 +152,9 @@ class Using_New_Data_Format():
         else:
             print row
             print "NO TIME TO USE"
+
+    def rectify(self, x):
+        if x < 0:
+            return 0
+        else:
+            return x

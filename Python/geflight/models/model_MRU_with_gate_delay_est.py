@@ -62,7 +62,7 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
 
         pred.test_data = day.test_data.copy()
 
-        if day.mode == "training": 
+        if "training" in day.mode: 
             pred.test_data = \
                 dut.convert_predictions_from_datetimes_to_minutes(pred.test_data, day.midnight_time)
 
@@ -92,7 +92,7 @@ class MRU_with_gate_delay_est(mmwi.MRU_with_improvement):
         ega_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
             "gate", offset_str)
 
-        gate_delay = event_group["gate_delay_mins"].ix[event_group.index[0]]
+        gate_delay = event_group["gate_delay_seconds"].ix[event_group.index[0]]
 
         # Improves score on Kaggle
         if era_est > ega_est:
@@ -141,7 +141,7 @@ class MRU_with_gate_delay_upd(MRU_with_gate_delay_est):
         ega_est = self.get_updated_event_arrival(event_list, event_group.ix[event_group.index[0]],
             "gate", offset_str)
 
-        gate_delay = event_group["gate_delay_mins"].ix[event_group.index[0]]
+        gate_delay = event_group["gate_delay_seconds"].ix[event_group.index[0]]
 
         # Improves score on Kaggle
         if era_est > ega_est:
