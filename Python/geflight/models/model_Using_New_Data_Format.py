@@ -108,13 +108,14 @@ class Using_New_Data_Format():
         """
         Load the data needed for this model.
         """
-        data = pd.read_csv('/Users/dleen/Dropbox/GE Flight Quest/Data_for_modeling/' + \
-            'model_2012_01_04/parsed_fhe_' + folder_name + '_' + 'test' + \
-            '_filtered_with_dates_with_best_prediction.csv',             
-            na_values=["MISSING"], keep_default_na=True)
+        # data = pd.read_csv('/Users/dleen/Dropbox/GE Flight Quest/Data_for_modeling/' + \
+        #     'model_2012_01_04/parsed_fhe_' + folder_name + '_' + 'test' + \
+        #     '_filtered_with_dates_with_best_prediction.csv',             
+        #     na_values=["MISSING"], keep_default_na=True)
 
-        # data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered_with_dates.csv', 
-        # na_values=["MISSING"], keep_default_na=True)
+        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + \
+            '_filtered_with_dates_with_best_prediction.csv', 
+            na_values=["MISSING"], keep_default_na=True)
 
         # data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered.csv', 
         # na_values=["MISSING"], keep_default_na=True)

@@ -74,7 +74,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_new_data_upd, most_new_data, fn1, data_set_name, modes, cutoff_file)
+        temp = run_model.run_model(most_new_data, None, fn1, data_set_name, modes, cutoff_file)
         print temp
 
     else:
@@ -122,7 +122,6 @@ if __name__=='__main__':
 
     # lurn()
 
-    # testing_saved_data_model()
 
 
 
