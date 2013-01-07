@@ -18,20 +18,24 @@ def sanity_check(pred, mode):
             
             if row['actual_runway_arrival_predicted'] < 0 or row['actual_runway_arrival_predicted'] > 1980:
                 print "\t\tSanity prob flight {}! era: {}, ara: {}"\
-                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'], row['actual_runway_arrival_actual'])
+                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'], 
+                    row['actual_runway_arrival_actual'])
 
             if abs(row['actual_runway_arrival_actual'] - row['actual_runway_arrival_predicted']) > 59:
                 print "\t\tPred prob flight {}! era: {}, ara: {}, diff: {}"\
-                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'], row['actual_runway_arrival_actual'],
+                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'], 
+                    row['actual_runway_arrival_actual'],
                     row['actual_runway_arrival_actual'] - row['actual_runway_arrival_predicted'])
 
             if row['actual_gate_arrival_predicted'] < 0 or row['actual_gate_arrival_predicted'] > 1980:
                 print "\t\tSanity prob flight {}! ega: {}, aga: {}"\
-                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'], row['actual_gate_arrival_actual'])
+                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'], 
+                    row['actual_gate_arrival_actual'])
 
             if abs(row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted']) > 59:
                 print "\t\tPred prob flight {}! ega: {}, aga: {}, diff: {}"\
-                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'], row['actual_gate_arrival_actual'],
+                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'], 
+                    row['actual_gate_arrival_actual'],
                     row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted'])
 
             if abs(row['actual_runway_arrival_actual'] - row['actual_runway_arrival_predicted']) > 10:
@@ -53,8 +57,8 @@ def sanity_check(pred, mode):
                 k_over_pred = k_over_pred + 1
 
         print ""
-        print "\t\tRunway wrong: {} %".format(100 * j / pred_len)
-        print "\t\tGate wrong: {} %".format(100 * k / pred_len)
+        print "\t\tPercent Runway wrong: {} %".format(100 * j / pred_len)
+        print "\t\tPercent Gate wrong: {} %".format(100 * k / pred_len)
         print "\t\tRunway under (act > pred) predicted: {} %".format(100 * j_under_pred / pred_len)
         print "\t\tRunway over (pred > act) predicted: {} %".format(100 * j_over_pred / pred_len)
         print "\t\tGate under (act > pred) predicted: {} %".format(100 * k_under_pred / pred_len)

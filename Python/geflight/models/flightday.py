@@ -137,3 +137,16 @@ class FlightPredictions:
             'actual_gate_arrival'))
 
         self.test_data = pd.DataFrame(None)
+
+    def get_predictions_from_data(self, data):
+        self.flight_predictions = self.flight_predictions.reindex(range(len(data['flight_history_id'])))
+
+        self.flight_predictions['flight_history_id']     = data['flight_history_id']
+        self.flight_predictions['actual_runway_arrival'] = data['ERA_most_recent_minutes_after_midnight']
+        self.flight_predictions['actual_gate_arrival']   = data['EGA_most_recent_minutes_after_midnight']
+
+    def get_test_from_data(self, data):
+        self.test_data = data[['flight_history_id','actual_runway_arrival_minutes_after_midnight',
+            'actual_gate_arrival_minutes_after_midnight']]
+
+        self.test_data.columns = ['flight_history_id','actual_runway_arrival','actual_gate_arrival']

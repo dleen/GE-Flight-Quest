@@ -5,7 +5,6 @@ from models import model_MRU_with_improvement as mmwi
 from models import model_most_recent_update as mmru
 
 from models import model_Using_New_Data_Format as mundf
-from models import model_NDF_update_2 as mndfu2
 
 from utilities import folder_names as fn
 from models import run_model
@@ -53,8 +52,6 @@ def main():
     # Run model using the most recently updated estimates of 
     # the runway arrival and the gate arrival as the predictions 
     # for the actual arrival times:
-
-    most_new_data_upd = mndfu2.NDF_upd_2()
 
     most_new_data = mundf.Using_New_Data_Format()
 
