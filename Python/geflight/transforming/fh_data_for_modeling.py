@@ -25,11 +25,11 @@ def transform_fhe():
     data_set_name = "InitialTrainingSet_rev1"
     # data_set_name = "PublicLeaderboardSet"
 
-    cutoff_file = "cutoff_time_list_my_cutoff.csv"
+    # cutoff_file = "cutoff_time_list_my_cutoff.csv"
+    cutoff_file = "cutoff_time_list_my_cutoff_2.csv"
 
     for d in fn1:
         day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
-        # day = efd.ExtendedFlightDay(d, data_set_name, mode)
         print "Running day: {}".format(d)  
         create_data(day)
 

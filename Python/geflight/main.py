@@ -5,7 +5,7 @@ from models import model_MRU_with_improvement as mmwi
 from models import model_most_recent_update as mmru
 
 from models import model_Using_New_Data_Format as mundf
-from models import model_NDF_update as mndfu
+from models import model_NDF_update_2 as mndfu2
 
 from utilities import folder_names as fn
 from models import run_model
@@ -54,7 +54,7 @@ def main():
     # the runway arrival and the gate arrival as the predictions 
     # for the actual arrival times:
 
-    most_new_data_upd = mndfu.NDF_upd()
+    most_new_data_upd = mndfu2.NDF_upd_2()
 
     most_new_data = mundf.Using_New_Data_Format()
 
@@ -77,7 +77,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_new_data, most_new_data_upd, fn1, data_set_name, modes, cutoff_file)
+        temp = run_model.run_model(most_new_data_upd, most_new_data, fn1, data_set_name, modes, cutoff_file)
         print temp
 
     else:
@@ -113,7 +113,7 @@ def agt():
     uadc.calc_avg_gate_airline_times()
 
 if __name__=='__main__':
-    # main()
+    main()
     
     # agt()
 
@@ -125,7 +125,7 @@ if __name__=='__main__':
 
     # lurn()
 
-    testing_saved_data_model()
+    # testing_saved_data_model()
 
 
 

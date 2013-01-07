@@ -43,7 +43,7 @@ class Using_New_Data_Format():
 
         data = self.load_day(day.folder_name)
 
-        data = add_column_avg_gate_delays_by_arr_airport(data)
+        data = self.add_column_avg_gate_delays_by_arr_airport_and_airline(data)
 
         self.check_for_missing_era(data, day.midnight_time, day.cutoff_time)
         self.check_for_missing_ega(data, day.midnight_time, day.cutoff_time)
@@ -84,23 +84,26 @@ class Using_New_Data_Format():
         temp = data[data['ERA_most_recent_minutes_after_midnight'] > data['EGA_most_recent_minutes_after_midnight']]
 
         for i, row in temp.iterrows():
-            if row['gate_delay_seconds'] >= 0:
-                gd = row['gate_delay_seconds'] / float(60)
-                data['EGA_most_recent_minutes_after_midnight'][i] = \
-                    data['ERA_most_recent_minutes_after_midnight'][i] + gd
-            elif row['gate_delay_seconds'] < 0:
-                gd = abs(row['gate_delay_seconds']) / float(60)
-                data['EGA_most_recent_minutes_after_midnight'][i] = \
-                    data['ERA_most_recent_minutes_after_midnight'][i]
-                data['ERA_most_recent_minutes_after_midnight'][i] = \
-                    data['EGA_most_recent_minutes_after_midnight'][i] - gd
-            else:
-                data['EGA_most_recent_minutes_after_midnight'][i] = \
-                    data['ERA_most_recent_minutes_after_midnight'][i]
+            data['EGA_most_recent_minutes_after_midnight'][i] = \
+                data['ERA_most_recent_minutes_after_midnight'][i]
+
+        pos_delay = data[data['gate_delay_seconds'] >= 0]
+        temp = pos_delay[pos_delay['EGA_most_recent_minutes_after_midnight'] - \
+            pos_delay['ERA_most_recent_minutes_after_midnight'] > \
+            pos_delay['gate_delay_seconds'] / float(60)]
+
+        for i, row in temp.iterrows():
+            data['EGA_most_recent_minutes_after_midnight'][i] = \
+                data['ERA_most_recent_minutes_after_midnight'][i] + \
+                data['gate_delay_seconds'][i] / float(60)
+
 
     def load_day(self, folder_name):
-        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered_with_dates.csv', 
-        # data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered.csv', 
+        # data = pd.read_csv('/Users/dleen/Dropbox/GE Flight Quest/Data_for_modeling/' + \
+        #     'model_2012_01_04/parsed_fhe_' + folder_name + '_' + 'test' + \
+        #     '_filtered_with_dates_with_best_prediction.csv', 
+        # data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered_with_dates.csv', 
+        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + '_filtered.csv', 
             na_values=["MISSING"], keep_default_na=True)
         return data
 
@@ -158,3 +161,14 @@ class Using_New_Data_Format():
             return 0
         else:
             return x
+
+    def add_column_avg_gate_delays_by_arr_airport_and_airline(self, data):
+        """
+        Description
+        """
+        gaggo = pd.read_csv('output_csv/average_gate_delay_by_arrival_airport_and_airline.csv')
+
+        temp = pd.merge(left=data, 
+            right=gaggo, on=['arrival_airport_icao_code','airline_icao_code'], how='left', sort=False)
+
+        return temp
