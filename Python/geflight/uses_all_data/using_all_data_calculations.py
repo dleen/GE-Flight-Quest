@@ -67,6 +67,18 @@ class AllTrainingData:
                 self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
                 print "done"
 
+        if data == "parsed_fhe_test_no_dates_with_best":
+            print "AllTrainingData Initializing: using data {}".format(data)
+            for f in fn.folder_names_test_set():
+                print "\tLoading parsed_fhe_test.csv file {}...".format(f),
+                temp = \
+                    pd.read_csv('output_csv/parsed_fhe_' + f + '_' + "test" + \
+                    '_filtered_with_dates_with_best_prediction.csv',
+                    # might have to fix to work with test data?
+                    na_values=["MISSING"], keep_default_na=False)
+                self.parsed_fhe = pd.concat([self.parsed_fhe, temp])
+                print "done"
+
 # CLEAN THIS UP!!!
 def average_gate_delays_by_arrival_airport(all_training_data_flight_history):
     """

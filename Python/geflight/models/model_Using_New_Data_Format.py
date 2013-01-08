@@ -14,15 +14,21 @@ class Using_New_Data_Format():
     def __repr__(self):
         return "Using new data format"
 
+    def __init__(self, folder_name):
+        """
+        Folder name specifies the location of where it should load the data from
+        """
+        self.condensed_data_folder_name = folder_name
+
     def run_day(self, day, pred):
         """
         All models should have a function like this.
         This says how to run the model/return a prediction
         for a single day.
         """
-        return self.using_most_recent_updates_individual_day(day, pred)
+        return self.calculate_predictions(day, pred)
 
-    def using_most_recent_updates_individual_day(self, day, pred):
+    def calculate_predictions(self, day, pred):
         """
         Main function for the model
         """
@@ -64,6 +70,8 @@ class Using_New_Data_Format():
         # and if we've made any really bad predictions!
         if "training" in day.mode:
             sc.sanity_check(pred, "training")
+
+        self.save_day(pred, data, day.folder_name)
 
         # Return the prediction for this day
         return pred
@@ -113,7 +121,8 @@ class Using_New_Data_Format():
         #     '_filtered_with_dates_with_best_prediction.csv',             
         #     na_values=["MISSING"], keep_default_na=True)
 
-        data = pd.read_csv('output_csv/parsed_fhe_' + folder_name + '_' + 'test' + \
+        data = pd.read_csv(self.condensed_data_folder_name + \
+            '/parsed_fhe_' + folder_name + '_' + 'test' + \
             '_filtered_with_dates_with_best_prediction.csv', 
             na_values=["MISSING"], keep_default_na=True)
 
@@ -122,7 +131,7 @@ class Using_New_Data_Format():
 
         return data
 
-    def save_day(self, pred, data):
+    def save_day(self, pred, data, folder_name):
         """
         Saves the output of this model for other uses.
         Output is saved to csv file
@@ -130,10 +139,15 @@ class Using_New_Data_Format():
         pred_rename = pred.flight_predictions.rename(columns={'actual_runway_arrival' : 'best_model_ARA',
             'actual_gate_arrival' : 'best_model_AGA'})
 
-        data = pd.merge(left=data, right=pred_rename, on='flight_history_id',
-            how='left', sort=False)
+        if "best_model_ARA" not in data.columns and \
+            "best_model_AGA" not in data.columns:
+            data = pd.merge(left=data, right=pred_rename, on='flight_history_id',
+                how='left', sort=False)
+        else:
+            data['best_model_ARA'] = pred_rename['best_model_ARA']
+            data['best_model_AGA'] = pred_rename['best_model_AGA']
 
-        data.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + \
+        data.to_csv('output_csv/parsed_fhe_' + folder_name + '_' + "test" + \
             '_filtered_with_dates_with_best_prediction.csv', index=False, na_rep="MISSING")
 
     def check_for_missing_era(self, data, midnight, cutoff):

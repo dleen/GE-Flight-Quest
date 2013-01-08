@@ -53,7 +53,7 @@ def main():
     # the runway arrival and the gate arrival as the predictions 
     # for the actual arrival times:
 
-    most_new_data = mundf.Using_New_Data_Format()
+    most_new_data = mundf.Using_New_Data_Format("output_csv")
 
     most_recent_gdly = mmgd.MRU_with_gate_delay_est()
     most_recent_gdly_upd = mmgd.MRU_with_gate_delay_upd()
@@ -62,19 +62,17 @@ def main():
 
     if "leaderboard" in modes:
 
-        fn1 = fn.folder_names_test_set()
         data_set_name = "PublicLeaderboardSet"
 
-        run_model.run_model(most_new_data_upd, None, fn1, data_set_name, modes)
+        run_model.run_model(most_new_data_upd, None, data_set_name, modes)
 
     elif "training" in modes:
 
-        fn1 = fn.folder_names_init_set()
         data_set_name = "InitialTrainingSet_rev1"
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_new_data, None, fn1, data_set_name, modes, cutoff_file)
+        temp = run_model.run_model(most_new_data, None, data_set_name, modes, cutoff_file)
         print temp
 
     else:
