@@ -263,3 +263,10 @@ class Using_New_Data_Format():
             right=gate_delays, on='arrival_airport_icao_code', how='left', sort=False)
 
         return data_with_delays
+
+    def add_column_asdi_estimated_arrival(data):
+        """
+        Description
+        """
+
+

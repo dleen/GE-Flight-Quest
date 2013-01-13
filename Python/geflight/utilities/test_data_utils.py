@@ -119,3 +119,8 @@ def filter_data_based_on_cutoff_and_test_ids(test_flight_history_ids,
     ind = df[df[date_column_name] > cutoff_time]
 
     return input_data_to_filter.drop(ind['index'].values, axis=0)
+
+def filter_data_based_on_cutoff(data, date_column_name, cutoff_time):
+    ind = data[data[date_column_name] > cutoff_time]
+
+    return data.drop(ind['index'].values, axis=0)

@@ -197,10 +197,10 @@ def to_utc_date_asdi_plan(datestr):
     Convert strings imported from csv to datetimes
     dealing with non-date strings
     """
-    if not datestr or datestr == "MISSING":
-        return "MISSING"
-    if datestr == "HIDDEN":
-        return "HIDDEN"
+    if pd.isnull(datestr):
+        return np.nan
+    if not datestr or datestr in ["MISSING", "HIDDEN", ""]:
+        return np.nan
     return parse_datetime_format2(datestr)
 
 def parse_datetime_format2(datestr):
@@ -222,4 +222,5 @@ def parse_datetime_format2(datestr):
                            int(datestr[17:19]),
                            0,
                            tzutc())
+    dt = dt.astimezone(tzutc())
     return dt

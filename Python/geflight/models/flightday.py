@@ -146,6 +146,7 @@ class FlightPredictions:
         self.flight_predictions['actual_gate_arrival']   = data['EGA_most_recent_minutes_after_midnight']
 
     def get_test_from_data(self, data):
+        print data
         self.test_data = data[['flight_history_id','actual_runway_arrival_minutes_after_midnight',
             'actual_gate_arrival_minutes_after_midnight']]
 

@@ -56,6 +56,9 @@ def sanity_check(pred, mode):
             if - row['actual_gate_arrival_actual'] + row['actual_gate_arrival_predicted'] > 10:
                 k_over_pred = k_over_pred + 1
 
+            # Is there a way to eliminate the effect of a bad runway prediction
+            # from the gate predictions?
+
         print ""
         print "\t\tPercent Runway wrong: {} %".format(100 * j / pred_len)
         print "\t\tPercent Gate wrong: {} %".format(100 * k / pred_len)

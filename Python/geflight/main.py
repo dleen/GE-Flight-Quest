@@ -6,6 +6,8 @@ from models import model_most_recent_update as mmru
 
 from models import model_Using_New_Data_Format as mundf
 
+from models import model_Using_ASDI_time_est as muate
+
 from utilities import folder_names as fn
 from models import run_model
 
@@ -55,6 +57,8 @@ def main():
 
     most_new_data = mundf.Using_New_Data_Format("output_csv")
 
+    asdi_time_est = muate.Using_ASDI_time_est("output_csv")
+
     most_recent_gdly = mmgd.MRU_with_gate_delay_est()
     most_recent_gdly_upd = mmgd.MRU_with_gate_delay_upd()
     most_recent_imp  = mmwi.MRU_with_improvement()
@@ -72,7 +76,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_new_data, None, data_set_name, modes, cutoff_file)
+        temp = run_model.run_model(most_new_data, asdi_time_est, data_set_name, modes, cutoff_file)
         print temp
 
     else:
@@ -107,6 +111,20 @@ def agt():
     # uadc.calc_avg_gate_times()
     uadc.calc_avg_gate_airline_times()
 
+def asdi_test():
+    from models import asdiday as ad
+
+    # mode = ["training"]
+    mode = ["leaderboard"]
+
+    fn1 = fn.folder_names_test_set()
+    # data_set_name = "InitialTrainingSet_rev1"
+    data_set_name = "PublicLeaderboardSet"
+
+    d = ad.ASDIDay(fn1[0], data_set_name, mode)
+
+
+
 if __name__=='__main__':
     main()
     
@@ -119,6 +137,8 @@ if __name__=='__main__':
     # alld()
 
     # lurn()
+
+    # asdi_test()
 
 
 
