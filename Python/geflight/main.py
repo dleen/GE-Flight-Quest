@@ -68,7 +68,8 @@ def main():
 
         data_set_name = "PublicLeaderboardSet"
 
-        run_model.run_model(most_new_data_upd, None, data_set_name, modes)
+        run_model.run_model(most_recent_gdly, None,
+            data_set_name, modes)
 
     elif "training" in modes:
 
@@ -76,40 +77,26 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_new_data, asdi_time_est, data_set_name, modes, cutoff_file)
+        temp = run_model.run_model(most_new_data, None,
+            data_set_name, modes, cutoff_file)
         print temp
 
     else:
         print "Not a valid option!"
-        
 
-def testing_saved_data_model():
-    most_new_data = mundf.Using_New_Data_Format()
-
-    mode = ["training"]
-
-    fn1 = fn.folder_names_init_set()
-    data_set_name = "InitialTrainingSet_rev1"
-
-    d = fd.FlightDay(fn1[0], data_set_name, mode)
-
-    d.save_cutoff_times("input_csv/cutoff_time_list_my_cutoff_2.csv")
-
-    # cutoff_file = "cutoff_time_list_my_cutoff.csv"
-
-    # temp = run_model.run_model(most_new_data, None, fn1, data_set_name, mode, cutoff_file)
-
-    # print temp
 
 def alld():
     gad.clean_all_parsed_fhe()
 
+
 def lurn():
     rffi.r_forest()
+
 
 def agt():
     # uadc.calc_avg_gate_times()
     uadc.calc_avg_gate_airline_times()
+
 
 def asdi_test():
     from models import asdiday as ad
@@ -121,13 +108,12 @@ def asdi_test():
     # data_set_name = "InitialTrainingSet_rev1"
     data_set_name = "PublicLeaderboardSet"
 
-    d = ad.ASDIDay(fn1[0], data_set_name, mode)
+    ad.ASDIDay(fn1[0], data_set_name, mode)
 
 
-
-if __name__=='__main__':
+if __name__ == '__main__':
     main()
-    
+
     # agt()
 
     # fhdfm.transform_fhe()
@@ -139,7 +125,3 @@ if __name__=='__main__':
     # lurn()
 
     # asdi_test()
-
-
-
-

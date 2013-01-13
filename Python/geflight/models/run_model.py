@@ -9,9 +9,11 @@ from models import asdiday as ad
 from utilities import folder_names as fn
 from utilities import rmse
 
+
 def run_model(model_A, model_B, data_set_name, mode, cutoff_filename=""):
     """
-    Runs the most recent update model for each day in the dataset and returns the result to a 
+    Runs the most recent update model for each day
+    in the dataset and returns the result to a
     csv file in the python directory.
     """
 
@@ -27,7 +29,7 @@ def run_model(model_A, model_B, data_set_name, mode, cutoff_filename=""):
     # Fin_X contains the final predictions for model X
     fin_A = fd.FlightPredictions()
 
-    # If we have a second model to compare against, to check for 
+    # If we have a second model to compare against, to check for
     # improvements or anything like that load it into B
     if model_B != None:
         fin_B = fd.FlightPredictions()
@@ -40,14 +42,14 @@ def run_model(model_A, model_B, data_set_name, mode, cutoff_filename=""):
         if model_B == None:
             print "Running model '{}' on day {} (day {} of {}):".format(model_A, d, i + 1, len(days_list))
         else:
-            print "Running models '{}', '{}' on day {} (day {} of {}):".format(model_A, 
+            print "Running models '{}', '{}' on day {} (day {} of {}):".format(model_A,
                 model_B, d, i + 1, len(days_list))
 
         # Initialize all the information about each day.
         # Extended means we include the flight history events file
         # day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_filename)
-        # day = fd.FlightDay(d, data_set_name, mode, cutoff_filename)
-        day = ad.ASDIDay(d, data_set_name, mode, cutoff_filename)
+        day = fd.FlightDay(d, data_set_name, mode, cutoff_filename)
+        # day = ad.ASDIDay(d, data_set_name, mode, cutoff_filename)
 
         # Compute the predicitons for the day
         fin_A = return_predictions(model_A, day, fin_A)
@@ -70,7 +72,7 @@ def run_model(model_A, model_B, data_set_name, mode, cutoff_filename=""):
             print "Warning: we have disregarded the output of '{}'!".format(model_B)
 
     elif "training" in mode:
-        # In training mode we can calculate the root mean squared error as we 
+        # In training mode we can calculate the root mean squared error as we
         # know the true values
         score_A = rmse.calculate_rmse_score(fin_A.flight_predictions, fin_A.test_data)
 
@@ -79,8 +81,8 @@ def run_model(model_A, model_B, data_set_name, mode, cutoff_filename=""):
         else:
             score_B = None
 
-        scores = {str(model_A) : score_A, 
-                  str(model_B) : score_B}
+        scores = {str(model_A): score_A,
+                  str(model_B): score_B}
 
         # Write the scores to the score log for record keeping
         # See if we are making improvements
@@ -90,6 +92,7 @@ def run_model(model_A, model_B, data_set_name, mode, cutoff_filename=""):
 
     else:
         print "Not an option!"
+
 
 def return_predictions(model, day, fin):
     """
@@ -101,10 +104,11 @@ def return_predictions(model, day, fin):
     pred = fd.FlightPredictions()
     pred = model.run_day(day, pred)
     fin.flight_predictions = pd.concat([fin.flight_predictions, pred.flight_predictions])
-    fin.test_data          = pd.concat([fin.test_data, pred.test_data])
+    fin.test_data = pd.concat([fin.test_data, pred.test_data])
     print "done"
 
     return fin
+
 
 def log_predictions(day, model_A, model_B, scores, filename):
     """
@@ -112,4 +116,5 @@ def log_predictions(day, model_A, model_B, scores, filename):
     """
     with open(filename, "a+b") as f:
         f.write("{}: Using model(s): {}, {}. Scores: {}. Using mode: {}. Using cutoff data: {}\n"\
-            .format(datetime.datetime.now(), model_A, model_B, scores, day.mode, day.cutoff_filename))
+            .format(datetime.datetime.now(), model_A, model_B, scores,
+            day.mode, day.cutoff_filename))

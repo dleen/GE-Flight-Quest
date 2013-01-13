@@ -1,40 +1,44 @@
 import pandas as pd
 
+
 def sanity_check(pred, mode):
     if mode == "training":
 
         combined_on_id = pd.merge(left=pred.flight_predictions, right=pred.test_data,
             on='flight_history_id', suffixes=('_predicted', '_actual'),  sort=False)
 
-        j = 0; k = 0
-        j_under_pred = 0; j_over_pred = 0
-        k_under_pred = 0; k_over_pred = 0
+        j = 0
+        k = 0
+        j_under_pred = 0
+        j_over_pred = 0
+        k_under_pred = 0
+        k_over_pred = 0
 
         pred_len = float(len(combined_on_id))
 
         print ""
         print "\t\tPrediction problems:"
         for i, row in combined_on_id.iterrows():
-            
+
             if row['actual_runway_arrival_predicted'] < 0 or row['actual_runway_arrival_predicted'] > 1980:
                 print "\t\tSanity problem with flight {}! era: {}, ara: {}"\
-                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'], 
+                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'],
                     row['actual_runway_arrival_actual'])
 
             if abs(row['actual_runway_arrival_actual'] - row['actual_runway_arrival_predicted']) > 59:
                 print "\t\tPred problem with flight {}! era: {}, ara: {}, diff: {}"\
-                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'], 
+                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'],
                     row['actual_runway_arrival_actual'],
                     row['actual_runway_arrival_actual'] - row['actual_runway_arrival_predicted'])
 
             if row['actual_gate_arrival_predicted'] < 0 or row['actual_gate_arrival_predicted'] > 1980:
                 print "\t\tSanity problem with flight {}! ega: {}, aga: {}"\
-                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'], 
+                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'],
                     row['actual_gate_arrival_actual'])
 
             if abs(row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted']) > 59:
                 print "\t\tPred problem with flight {}! ega: {}, aga: {}, diff: {}"\
-                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'], 
+                .format(row['flight_history_id'], row['actual_gate_arrival_predicted'],
                     row['actual_gate_arrival_actual'],
                     row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted'])
 
@@ -44,13 +48,13 @@ def sanity_check(pred, mode):
             if abs(row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted']) > 10:
                 k = k + 1
 
-            if   row['actual_runway_arrival_actual'] - row['actual_runway_arrival_predicted'] > 10:
+            if row['actual_runway_arrival_actual'] - row['actual_runway_arrival_predicted'] > 10:
                 j_under_pred = j_under_pred + 1
 
             if - row['actual_runway_arrival_actual'] + row['actual_runway_arrival_predicted'] > 10:
                 j_over_pred = j_over_pred + 1
 
-            if   row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted'] > 10:
+            if row['actual_gate_arrival_actual'] - row['actual_gate_arrival_predicted'] > 10:
                 k_under_pred = k_under_pred + 1
 
             if - row['actual_gate_arrival_actual'] + row['actual_gate_arrival_predicted'] > 10:

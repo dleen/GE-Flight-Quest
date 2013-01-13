@@ -6,6 +6,7 @@ from datetime import datetime
 from utilities import date_utilities as dut
 from utilities import test_data_utils as tdu
 
+
 class FlightDay:
     """
     A Day class for storing the most basic information we know about one day of flight data i.e.:
@@ -32,9 +33,9 @@ class FlightDay:
 
         self.load_cutoff_times(cutoff_filename)
 
-        self.midnight_time = datetime(self.cutoff_time.year, 
-                                      self.cutoff_time.month, 
-                                      self.cutoff_time.day, 
+        self.midnight_time = datetime(self.cutoff_time.year,
+                                      self.cutoff_time.month,
+                                      self.cutoff_time.day,
                                       tzinfo=tzutc())
 
         self.load_test_data()
@@ -47,7 +48,7 @@ class FlightDay:
             pd.read_csv("../Data/" + self.data_set_name + \
             "/" + self.folder_name + "/" + "FlightHistory/flighthistory.csv",
             na_values=["MISSING", "HIDDEN", ""], keep_default_na=True,
-            converters = dut.get_flight_history_date_converter())
+            converters=dut.get_flight_history_date_converter())
         print "done"
 
     def load_test_data(self):
@@ -74,11 +75,11 @@ class FlightDay:
 
         if "leaderboard" in self.mode:
 
-            print "\tLoading cutoff times from {}...".format("days.csv"),            
+            print "\tLoading cutoff times from {}...".format("days.csv"),
             self.cutoff_time_list = pd.read_csv("../Data/" + self.data_set_name + "/" "days.csv",
                 index_col='folder_name', parse_dates=[1])
             print "done"
-            
+
         elif filename != "":
 
             print "\tLoading cutoff times from {}...".format(filename),
@@ -92,9 +93,9 @@ class FlightDay:
 
         self.cutoff_time = self.cutoff_time_list['selected_cutoff_time'].ix[self.folder_name]
 
-        self.midnight_time = datetime(self.cutoff_time.year, 
-                              self.cutoff_time.month, 
-                              self.cutoff_time.day, 
+        self.midnight_time = datetime(self.cutoff_time.year,
+                              self.cutoff_time.month,
+                              self.cutoff_time.day,
                               tzinfo=tzutc())
 
     def save_cutoff_times(self, filename):
@@ -112,11 +113,11 @@ class FlightDay:
             self.cutoff_time_list = tdu.generate_cutoff_times()
 
             # Fix folder names, currently static. They need to change?
-            self.cutoff_time = cutoff_time_list['selected_cutoff_time'].ix[self.folder_name]
+            self.cutoff_time = self.cutoff_time_list['selected_cutoff_time'].ix[self.folder_name]
 
-            self.midnight_time = datetime(self.cutoff_time.year, 
-                                          self.cutoff_time.month, 
-                                          self.cutoff_time.day, 
+            self.midnight_time = datetime(self.cutoff_time.year,
+                                          self.cutoff_time.month,
+                                          self.cutoff_time.day,
                                           tzinfo=tzutc())
 
     def generate_new_test_data(self):
@@ -133,7 +134,7 @@ class FlightPredictions:
     """
     def __init__(self):
         self.flight_predictions = pd.DataFrame(None, columns=('flight_history_id',
-            'actual_runway_arrival', 
+            'actual_runway_arrival',
             'actual_gate_arrival'))
 
         self.test_data = pd.DataFrame(None)
@@ -141,13 +142,12 @@ class FlightPredictions:
     def get_predictions_from_data(self, data):
         self.flight_predictions = self.flight_predictions.reindex(range(len(data['flight_history_id'])))
 
-        self.flight_predictions['flight_history_id']     = data['flight_history_id']
+        self.flight_predictions['flight_history_id'] = data['flight_history_id']
         self.flight_predictions['actual_runway_arrival'] = data['ERA_most_recent_minutes_after_midnight']
-        self.flight_predictions['actual_gate_arrival']   = data['EGA_most_recent_minutes_after_midnight']
+        self.flight_predictions['actual_gate_arrival'] = data['EGA_most_recent_minutes_after_midnight']
 
     def get_test_from_data(self, data):
-        print data
-        self.test_data = data[['flight_history_id','actual_runway_arrival_minutes_after_midnight',
+        self.test_data = data[['flight_history_id', 'actual_runway_arrival_minutes_after_midnight',
             'actual_gate_arrival_minutes_after_midnight']]
 
-        self.test_data.columns = ['flight_history_id','actual_runway_arrival','actual_gate_arrival']
+        self.test_data.columns = ['flight_history_id', 'actual_runway_arrival', 'actual_gate_arrival']
