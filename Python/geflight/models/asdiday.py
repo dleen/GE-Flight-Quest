@@ -25,9 +25,9 @@ class ASDIDay(fd.FlightDay):
 
         self.load_cutoff_times(cutoff_filename)
 
-        self.midnight_time = datetime(self.cutoff_time.year, 
-            self.cutoff_time.month, 
-            self.cutoff_time.day, 
+        self.midnight_time = datetime(self.cutoff_time.year,
+            self.cutoff_time.month,
+            self.cutoff_time.day,
             tzinfo=tzutc())
 
         self.load_test_data()
@@ -40,17 +40,13 @@ class ASDIDay(fd.FlightDay):
         pd.read_csv("../Data/" + self.data_set_name + "/" + self.folder_name + "/" + \
             "ASDI/asdiflightplan.csv",
             na_values=["MISSING", "HIDDEN", ""], keep_default_na=True,
-            converters = dut.get_asdi_flight_plan_date_converter())
-        self.asdi_flight_plan.rename(columns={"flighthistoryid" : "flight_history_id"}, inplace=True)
+            converters=dut.get_asdi_flight_plan_date_converter())
+        self.asdi_flight_plan.rename(columns={"flighthistoryid": "flight_history_id"}, inplace=True)
         print "done"
-
-    def match_asdi_data_with_flight_history_ids(self):
-        pass
 
     def filter_asdi_data(self):
         print "\tFiltering asdi flight plan data set...",
         self.asdi_flight_plan = \
-        tdu.filter_data_based_on_cutoff_and_test_ids(self.test_data,
+            tdu.filter_data_based_on_cutoff_and_test_ids(self.test_data,
             self.asdi_flight_plan, 'updatetimeutc', self.cutoff_time)
         print "done"
-

@@ -25,12 +25,12 @@ def transform_fhe():
     data_set_name = "InitialTrainingSet_rev1"
     # data_set_name = "PublicLeaderboardSet"
 
-    # cutoff_file = "cutoff_time_list_my_cutoff.csv"
-    cutoff_file = "cutoff_time_list_my_cutoff_2.csv"
+    cutoff_file = "cutoff_time_list_my_cutoff.csv"
+    # cutoff_file = "cutoff_time_list_my_cutoff_2.csv"
 
     for d in fn1:
         day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_file)
-        print "Running day: {}".format(d)  
+        print "Running day: {}".format(d)
         create_data(day)
 
 
@@ -55,13 +55,13 @@ def create_data(day):
 
     joined = joined.replace("", np.nan)
 
-    days_to_parse_arr = ['AGA_most_recent','ARA_most_recent','EGA_most_recent',
+    days_to_parse_arr = ['AGA_most_recent', 'ARA_most_recent', 'EGA_most_recent',
     'ERA_most_recent']
 
-    days_to_parse_dep = ['AGD_most_recent','ARD_most_recent']
+    days_to_parse_dep = ['AGD_most_recent', 'ARD_most_recent']
 
-    days_to_parse = ['AGA_most_recent','ARA_most_recent','EGA_most_recent',
-    'ERA_most_recent','AGD_most_recent','ARD_most_recent']
+    days_to_parse = ['AGA_most_recent', 'ARA_most_recent', 'EGA_most_recent',
+    'ERA_most_recent', 'AGD_most_recent', 'ARD_most_recent']
 
     for d in days_to_parse_arr:
         joined[d] = joined[d] + joined['arrival_airport_timezone_offset']

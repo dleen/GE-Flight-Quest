@@ -1,8 +1,5 @@
 from models import flightday as fd
 
-from models import model_MRU_with_gate_delay_est as mmgd
-from models import model_MRU_with_improvement as mmwi
-from models import model_most_recent_update as mmru
 
 from models import model_Using_New_Data_Format as mundf
 
@@ -17,6 +14,7 @@ from uses_all_data import group_all_data as gad
 from uses_all_data import using_all_data_calculations as uadc
 
 from learning import random_forest_feature_importance as rffi
+
 
 def main():
     """
@@ -51,24 +49,15 @@ def main():
     modes = ["training"]
     # modes = ["leaderboard"]
 
-    # Run model using the most recently updated estimates of 
-    # the runway arrival and the gate arrival as the predictions 
-    # for the actual arrival times:
-
     most_new_data = mundf.Using_New_Data_Format("output_csv")
 
     asdi_time_est = muate.Using_ASDI_time_est("output_csv")
-
-    most_recent_gdly = mmgd.MRU_with_gate_delay_est()
-    most_recent_gdly_upd = mmgd.MRU_with_gate_delay_upd()
-    most_recent_imp  = mmwi.MRU_with_improvement()
-    most_recent      = mmru.MRU()
 
     if "leaderboard" in modes:
 
         data_set_name = "PublicLeaderboardSet"
 
-        run_model.run_model(most_recent_gdly, None,
+        run_model.run_model(most_new_data, None,
             data_set_name, modes)
 
     elif "training" in modes:
@@ -77,7 +66,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(most_new_data, None,
+        temp = run_model.run_model(asdi_time_est, most_new_data,
             data_set_name, modes, cutoff_file)
         print temp
 
@@ -99,17 +88,14 @@ def agt():
 
 
 def asdi_test():
-    from models import asdiday as ad
+    from models import extended_asdiday as ead
 
-    # mode = ["training"]
-    mode = ["leaderboard"]
+    fold = fn.folder_names_init_set()
+    data_set_name = "InitialTrainingSet_rev1"
+    cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-    fn1 = fn.folder_names_test_set()
-    # data_set_name = "InitialTrainingSet_rev1"
-    data_set_name = "PublicLeaderboardSet"
-
-    ad.ASDIDay(fn1[0], data_set_name, mode)
-
+    ead.ExtendedASDIDay(fold[0], data_set_name,
+        "training", cutoff_file)
 
 if __name__ == '__main__':
     main()
@@ -117,8 +103,6 @@ if __name__ == '__main__':
     # agt()
 
     # fhdfm.transform_fhe()
-
-    #testo()
 
     # alld()
 
