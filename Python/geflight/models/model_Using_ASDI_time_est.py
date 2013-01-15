@@ -55,7 +55,7 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
 
         self.gps_era_estimate(day, data)
 
-        # self.use_asdi_est(data)
+        self.use_asdi_est(data)
 
         # Replace any negative times with zero.
         # There's probably sometime better to do here?
@@ -83,7 +83,7 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
         if "training" in day.mode:
             sc.sanity_check(pred, "training")
 
-        self.save_day(pred, data, day.folder_name)
+        # self.save_day(pred, data, day.folder_name)
 
         # Return the prediction for this day
         return pred
@@ -116,7 +116,18 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
         data['estimatedarrivalutc_minutes_after_midnight'][temp] = \
             data['ERA_most_recent_minutes_after_midnight'][temp]
 
-        # PROBLEM HERE. DIFFERENT VALUES FOR DIFFERENT RUNS!!
+        temp = abs(data['estimatedarrivalutc_minutes_after_midnight'] - \
+            data['ERA_most_recent_minutes_after_midnight']) > 40
+
+        data['estimatedarrivalutc_minutes_after_midnight'][temp] = \
+            data['ERA_most_recent_minutes_after_midnight'][temp]
+
+        temp = abs(data['ERA_gps_est'] - \
+            data['ERA_most_recent_minutes_after_midnight']) > 40
+
+        data['ERA_most_recent_minutes_after_midnight'][temp] = \
+            data['ERA_gps_est'][temp]
+
         data['ERA_most_recent_minutes_after_midnight'] = \
             (data['estimatedarrivalutc_minutes_after_midnight'] + \
             data['ERA_most_recent_minutes_after_midnight'] + \

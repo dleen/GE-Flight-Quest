@@ -49,9 +49,9 @@ def run_model(model_A, model_B, data_set_name, mode, cutoff_filename=""):
         # Initialize all the information about each day.
         # Extended means we include the flight history events file
         # day = efd.ExtendedFlightDay(d, data_set_name, mode, cutoff_filename)
-        # day = fd.FlightDay(d, data_set_name, mode, cutoff_filename)
+        day = fd.FlightDay(d, data_set_name, mode, cutoff_filename)
         # day = ad.ASDIDay(d, data_set_name, mode, cutoff_filename)
-        day = ead.ExtendedASDIDay(d, data_set_name, mode, cutoff_filename)
+        # day = ead.ExtendedASDIDay(d, data_set_name, mode, cutoff_filename)
 
         # Compute the predicitons for the day
         fin_A = return_predictions(model_A, day, fin_A)
