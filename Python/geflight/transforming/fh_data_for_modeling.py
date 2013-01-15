@@ -11,12 +11,6 @@ import pandas as pd
 import numpy as np
 
 
-#
-# Idea: parse everything in fhe.csv once without cutoff
-# Then save, and load it appropriately using cutoff...?
-# ^^ Actually, this won't work.
-#
-
 def transform_fhe():
     # mode = "nofiltering"
     # mode = "leaderboard"
@@ -74,7 +68,7 @@ def create_data(day):
 
     for c in date_columns():
         joined[c + '_minutes_after_midnight'] = \
-            joined[c].apply(lambda x: float(dut.minutes_difference(x,day.midnight_time)))
+            joined[c].apply(lambda x: float(dut.minutes_difference(x, day.midnight_time)))
 
     # for c in date_columns():
     #     del joined[c]
@@ -92,6 +86,7 @@ def create_data(day):
 
     joined_test.to_csv('output_csv/parsed_fhe_' + day.folder_name + '_' + "test" + '_filtered_with_dates.csv',
         index=False, na_rep="MISSING")
+
 
 def date_columns():
 
@@ -121,6 +116,7 @@ def date_columns():
 
     return cols
 
+
 def unneces_cols():
 
     cols = ['airline_code',
@@ -134,6 +130,7 @@ def unneces_cols():
     ]
 
     return cols
+
 
 def non_date_columns():
 
@@ -154,3 +151,5 @@ def non_date_columns():
     'was_gate_adjusted',
     'was_time_adjusted'
     ]
+
+    return cols

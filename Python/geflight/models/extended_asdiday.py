@@ -47,11 +47,16 @@ class ExtendedASDIDay(ad.ASDIDay):
         print "done"
 
         print "\tLoading asdiposition.csv...",
+        if self.data_set_name == "PublicLeaderboardSet":
+            conv = dut.parse_datetime_format2
+        else:
+            conv = dut.parse_datetime_format1
+
         self.asdi_position = \
         pd.read_csv("../Data/" + self.data_set_name + "/" + \
             self.folder_name + "/" + "ASDI/asdiposition.csv",
             na_values=["MISSING", "HIDDEN", ""], keep_default_na=True,
-            converters={"received": dut.parse_datetime_format2})
+            converters={"received": conv})
 
         self.asdi_position.rename(
             columns={"flighthistoryid": "flight_history_id"},

@@ -5,6 +5,7 @@ from models import model_Using_New_Data_Format as mundf
 from models import asdiday as ad
 
 import pandas as pd
+import numpy as np
 
 
 class Using_ASDI_time_est(mundf.Using_New_Data_Format):
@@ -18,7 +19,6 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
         """
         Main function for the model
         """
-
         # Load the data for the day
         data = self.load_day(day.folder_name)
 
@@ -32,6 +32,19 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
             day.asdi_flight_plan = self.get_most_recent_asdi_time_est(day)
             data = self.add_column_asdi_time_est(day, data)
 
+        if "ordinal" not in data.columns or \
+            "arr_airport_latitude" not in data.columns or \
+            "arr_airport_longitude" not in data.columns:
+                day.asdi_fpwaypoint = self.get_arrival_airport_gps_coords(day)
+                data = self.add_column_arr_airport_gps(day, data)
+
+        if "received" not in data.columns or \
+            "groundspeed" not in data.columns or \
+            "curr_latitude" not in data.columns or \
+            "curr_longitude" not in data.columns:
+                day.asdi_position = self.get_position_groundspeed_received(day)
+                data = self.add_column_position_groundspeed_received(day, data)
+
         # Check for missing ERA / EGA values and if any are found replace them
         # with sensible values
         self.check_for_missing_era(data, day.midnight_time, day.cutoff_time)
@@ -39,6 +52,8 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
 
         # Fixes times where the runway arrival > gate arrival times
         self.fix_bad_EGA_times(data)
+
+        self.gps_era_estimate(day, data)
 
         self.use_asdi_est(data)
 
@@ -87,20 +102,68 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
 
     def get_most_recent_asdi_time_est(self, day):
         asdi_grouped = day.asdi_flight_plan.groupby('flight_history_id')
-        most_recent = asdi_grouped.apply(self.max_time_row)
+        most_recent = asdi_grouped.apply(self.max_time_row_update)
 
         return most_recent
 
-    def max_time_row(self, group):
+    def max_time_row_update(self, group):
         g_sort = group.sort_index(by='updatetimeutc', ascending=False).reset_index(drop=True)
         return g_sort.ix[0]
 
     def use_asdi_est(self, data):
         temp = data['estimatedarrivalutc_minutes_after_midnight'].notnull()
 
+        # PROBLEM HERE. DIFFERENT VALUES FOR DIFFERENT RUNS!!
         data['ERA_most_recent_minutes_after_midnight'][temp] = \
             (data['estimatedarrivalutc_minutes_after_midnight'][temp] + \
             data['ERA_most_recent_minutes_after_midnight'][temp]) / 2.0
+
+    def add_column_arr_airport_gps(self, day, data):
+        day.asdi_fpwaypoint.rename(
+            columns={"latitude": "arr_airport_latitude",
+                     "longitude": "arr_airport_longitude"},
+            inplace=True)
+
+        data_with_arr_gps = pd.merge(left=data, right=day.asdi_fpwaypoint, on='asdiflightplanid',
+            how='left', sort=False)
+
+        return data_with_arr_gps
+
+    def add_column_position_groundspeed_received(self, day, data):
+        day.asdi_position.rename(
+            columns={"latitudedegrees": "curr_latitude",
+                     "longitudedegrees": "curr_longitude"},
+            inplace=True)
+
+        day.asdi_position['received_minutes_after_midnight'] = \
+            day.asdi_position['received'].apply(lambda x: float(dut.minutes_difference(x, day.midnight_time)))
+
+        data_with_curr_pos = pd.merge(left=data, right=day.asdi_position, on='flight_history_id',
+            how='left', sort=False)
+
+        return data_with_curr_pos
+
+    def get_position_groundspeed_received(self, day):
+        asdi_grouped = day.asdi_position.groupby('flight_history_id')
+        asdi_pos_data = asdi_grouped.apply(self.max_time_row_received)
+
+        return asdi_pos_data
+
+    def max_time_row_received(self, group):
+        g_sort = group.sort_index(by='received', ascending=False).reset_index(drop=True)
+        return g_sort.ix[0]
+
+    def get_arrival_airport_gps_coords(self, day):
+        asdi_grouped = day.asdi_fpwaypoint.groupby('asdiflightplanid')
+        arr_gps = asdi_grouped.apply(self.max_ordinal)
+
+        return arr_gps
+
+    def max_ordinal(self, group):
+        g_sort = group.sort_index(by='ordinal',
+            ascending=False).reset_index(drop=True)
+
+        return g_sort.ix[0]
 
     def ERA_pick_times_in_order(self, row, midnight, cutoff):
         """
@@ -139,3 +202,49 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
         else:
             print row
             print "NO TIME TO USE"
+
+    def gps_era_estimate(self, day, data):
+        temp = data[['arr_airport_latitude', 'curr_latitude',
+            'arr_airport_longitude', 'curr_longitude',
+            'groundspeed', 'received_minutes_after_midnight']].dropna()
+
+        temp = temp[temp['groundspeed'] > 0.0]
+
+        data['ERA_gps_est'] = data['ERA_most_recent_minutes_after_midnight']
+
+        for i, row in temp.iterrows():
+            data['ERA_gps_est'][i] = \
+                self.calculate_time_until_arrival(row, day.midnight_time)
+
+    def calculate_time_until_arrival(self, row, midnight_time):
+
+        if abs(row['arr_airport_latitude'] - row['curr_latitude']) < 0.1 and \
+            abs(row['arr_airport_longitude'] - row['curr_longitude']) < 0.1:
+            t = 0
+        else:
+            d = self.calculate_distance(row['arr_airport_latitude'],
+                row['curr_latitude'],
+                row['arr_airport_longitude'],
+                row['curr_longitude'])
+
+            d = d * 0.621371
+
+            t = d / float(row['groundspeed'])
+
+            t = t * 60
+
+        era_est = row['received_minutes_after_midnight'] + t
+
+        return era_est
+
+    def calculate_distance(self, lat1, lat2, lon1, lon2):
+        R = 6371.0
+        lon1 = np.radians(lon1)
+        lon2 = np.radians(lon2)
+        lat1 = np.radians(lat1)
+        lat2 = np.radians(lat2)
+
+        d = np.arccos(np.sin(lat1) * np.sin(lat2) + \
+            np.cos(lat1) * np.cos(lat2) * np.cos(lon2 - lon1)) * R
+
+        return d

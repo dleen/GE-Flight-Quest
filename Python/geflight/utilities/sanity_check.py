@@ -19,6 +19,11 @@ def sanity_check(pred, mode):
         print ""
         print "\t\tPrediction problems:"
         for i, row in combined_on_id.iterrows():
+            if pd.isnull(row['actual_runway_arrival_predicted']) or \
+                pd.isnull(row['actual_gate_arrival_predicted']):
+                print "\t\tSanity problem with flight {}! era: {}, ega: {}"\
+                .format(row['flight_history_id'], row['actual_runway_arrival_predicted'],
+                    row['actual_gate_arrival_predicted'])                
 
             if row['actual_runway_arrival_predicted'] < 0 or row['actual_runway_arrival_predicted'] > 1980:
                 print "\t\tSanity problem with flight {}! era: {}, ara: {}"\

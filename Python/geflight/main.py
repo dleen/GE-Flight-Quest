@@ -66,7 +66,7 @@ def main():
 
         cutoff_file = "cutoff_time_list_my_cutoff.csv"
 
-        temp = run_model.run_model(asdi_time_est, most_new_data,
+        temp = run_model.run_model(asdi_time_est, None,
             data_set_name, modes, cutoff_file)
         print temp
 
