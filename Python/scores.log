@@ -152,3 +152,5 @@
 2013-01-14 18:20:22.620627: Using model(s): Using ASDI times, None. Scores: {'None': None, 'Using ASDI times': 9.0549203451337341}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv
 2013-01-14 18:25:25.794824: Using model(s): Using ASDI times, None. Scores: {'None': None, 'Using ASDI times': 8.8603486356938923}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv
 2013-01-14 18:32:19.520927: Using model(s): Using ASDI times, None. Scores: {'None': None, 'Using ASDI times': 8.8498695000147869}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv
+2013-01-14 18:44:47.274229: Using model(s): Using ASDI times, None. Scores: {'None': None, 'Using ASDI times': 8.8498695000147869}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv
+2013-01-14 18:46:20.339423: Using model(s): Using ASDI times, None. Scores: {'None': None, 'Using ASDI times': 8.7815035168815694}. Using mode: ['training']. Using cutoff data: cutoff_time_list_my_cutoff.csv

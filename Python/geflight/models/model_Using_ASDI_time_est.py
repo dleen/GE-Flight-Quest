@@ -55,7 +55,7 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
 
         self.gps_era_estimate(day, data)
 
-        self.use_asdi_est(data)
+        # self.use_asdi_est(data)
 
         # Replace any negative times with zero.
         # There's probably sometime better to do here?
@@ -83,7 +83,7 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
         if "training" in day.mode:
             sc.sanity_check(pred, "training")
 
-        # self.save_day(pred, data, day.folder_name)
+        self.save_day(pred, data, day.folder_name)
 
         # Return the prediction for this day
         return pred
@@ -111,12 +111,16 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
         return g_sort.ix[0]
 
     def use_asdi_est(self, data):
-        temp = data['estimatedarrivalutc_minutes_after_midnight'].notnull()
+        temp = data['estimatedarrivalutc_minutes_after_midnight'].isnull()
+
+        data['estimatedarrivalutc_minutes_after_midnight'][temp] = \
+            data['ERA_most_recent_minutes_after_midnight'][temp]
 
         # PROBLEM HERE. DIFFERENT VALUES FOR DIFFERENT RUNS!!
-        data['ERA_most_recent_minutes_after_midnight'][temp] = \
-            (data['estimatedarrivalutc_minutes_after_midnight'][temp] + \
-            data['ERA_most_recent_minutes_after_midnight'][temp]) / 2.0
+        data['ERA_most_recent_minutes_after_midnight'] = \
+            (data['estimatedarrivalutc_minutes_after_midnight'] + \
+            data['ERA_most_recent_minutes_after_midnight'] + \
+            data['ERA_gps_est']) / 3.0
 
     def add_column_arr_airport_gps(self, day, data):
         day.asdi_fpwaypoint.rename(
@@ -239,6 +243,7 @@ class Using_ASDI_time_est(mundf.Using_New_Data_Format):
 
     def calculate_distance(self, lat1, lat2, lon1, lon2):
         R = 6371.0
+
         lon1 = np.radians(lon1)
         lon2 = np.radians(lon2)
         lat1 = np.radians(lat1)

@@ -121,7 +121,7 @@ class Using_New_Data_Format():
         """
         data = pd.read_csv(self.condensed_data_folder_name + \
             '/parsed_fhe_' + folder_name + '_' + 'test' + \
-            '_filtered_with_dates_with_best_prediction_with_asdi.csv',
+            '_filtered_with_dates.csv',
             na_values=["MISSING"], keep_default_na=True)
 
         return data

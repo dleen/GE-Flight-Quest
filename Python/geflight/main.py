@@ -46,8 +46,8 @@ def main():
     can be found in flight_history_events.csv
     """
 
-    modes = ["training"]
-    # modes = ["leaderboard"]
+    # modes = ["training"]
+    modes = ["leaderboard"]
 
     most_new_data = mundf.Using_New_Data_Format("output_csv")
 
@@ -57,7 +57,7 @@ def main():
 
         data_set_name = "PublicLeaderboardSet"
 
-        run_model.run_model(most_new_data, None,
+        run_model.run_model(asdi_time_est, None,
             data_set_name, modes)
 
     elif "training" in modes:
